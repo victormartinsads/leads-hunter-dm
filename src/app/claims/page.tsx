@@ -15,10 +15,10 @@ export default async function ClaimsPage() {
       {/* Header */}
       <div>
         <div className="flex items-center space-x-2">
-          <ShieldCheck className="w-7 h-7 text-emerald-400" />
+          <ShieldCheck className="w-6 h-6 text-amber-400" />
           <h1 className="text-2xl font-black text-white tracking-tight">Gestão de Claims & Regras de Ouro</h1>
         </div>
-        <p className="text-xs text-slate-400 mt-1 max-w-3xl">
+        <p className="text-xs text-zinc-400 mt-1 max-w-3xl leading-relaxed">
           Controle rigoroso sobre o que o Google Gemini tem permissão de afirmar. Elimine alucinações comerciais garantindo que a IA só fale fatos 100% comprovados.
         </p>
       </div>

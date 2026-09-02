@@ -11,13 +11,8 @@ import {
   Settings, 
   Play, 
   Pause, 
-  Globe, 
   Cpu, 
-  CheckCircle2, 
-  AlertTriangle,
-  Flame,
-  ExternalLink,
-  Power
+  Flame
 } from 'lucide-react';
 import { ChromeIcon } from './Icons';
 
@@ -100,29 +95,29 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[#0f172a]/95 backdrop-blur border-b border-slate-800 text-white">
+      <header className="sticky top-0 z-50 bg-[#09090b]/98 backdrop-blur border-b border-zinc-800/80 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 gap-4">
             
             {/* Logo & Brand */}
-            <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-2.5 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
-                  <Flame className="w-5 h-5 text-white animate-pulse" />
+            <div className="flex items-center space-x-3 shrink-0">
+              <Link href="/" className="flex items-center space-x-3 group">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:bg-amber-500/20 transition-all">
+                  <Flame className="w-5 h-5 fill-amber-400/20 text-amber-400" />
                 </div>
-                <div>
-                  <div className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent">
+                <div className="flex flex-col justify-center">
+                  <span className="font-black text-sm tracking-tight text-white group-hover:text-amber-300 transition-colors leading-none">
                     Buscando 1 Milhão
-                  </div>
-                  <div className="text-[10px] uppercase font-semibold tracking-wider text-purple-400">
-                    Agente Comercial • Google Gemini
-                  </div>
+                  </span>
+                  <span className="text-[10px] font-bold tracking-widest text-amber-400/90 uppercase font-mono mt-1 leading-none">
+                    AGENTE COMERCIAL • GEMINI
+                  </span>
                 </div>
               </Link>
             </div>
 
-            {/* Navigation Links */}
-            <nav className="hidden md:flex items-center space-x-1">
+            {/* Clean Navigation Links */}
+            <nav className="hidden lg:flex items-center space-x-1 overflow-x-auto py-1">
               {navLinks.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -130,47 +125,44 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                       isActive
-                        ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-amber-400/10 text-amber-400 border border-amber-500/30 font-bold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-purple-400' : 'text-slate-400'}`} />
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : 'text-zinc-400'}`} />
                     <span>{item.label}</span>
                   </Link>
                 );
               })}
             </nav>
 
-            {/* Status Badges & Quick Action Buttons */}
-            <div className="flex items-center space-x-2.5">
+            {/* Status Badges & Action Toolbar */}
+            <div className="flex items-center space-x-2 shrink-0">
               
               {/* Gemini Badge */}
-              <div className={`hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                geminiStatus 
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                  : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-              }`}>
-                <Cpu className="w-3.5 h-3.5" />
+              <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <Cpu className="w-3.5 h-3.5 text-zinc-400" />
                 <span>Gemini 3.6 Flash</span>
               </div>
 
               {/* Chrome Launch / Status Button */}
               {chromeStatus === 'online' ? (
-                <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-0.5" />
+                <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <ChromeIcon className="w-3.5 h-3.5" />
-                  <span>Chrome Conectado</span>
+                  <span className="hidden sm:inline">Chrome Conectado</span>
                 </div>
               ) : (
                 <button
                   onClick={handleLaunchChrome}
                   disabled={launchingChrome}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors shadow-sm"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-500/30 transition-all cursor-pointer shadow-sm"
                   title="Clique para abrir a janela do Chrome dedicado no seu computador"
                 >
-                  <ChromeIcon className="w-3.5 h-3.5" />
+                  <ChromeIcon className="w-3.5 h-3.5 text-amber-400" />
                   <span>{launchingChrome ? 'Abrindo...' : 'Abrir Chrome (1-Clique)'}</span>
                 </button>
               )}
@@ -179,21 +171,21 @@ export default function Navbar() {
               <button
                 onClick={togglePause}
                 disabled={loadingToggle}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md ${
+                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm ${
                   isPaused
-                    ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20'
-                    : 'bg-rose-600/90 hover:bg-rose-500 text-white shadow-rose-600/20'
+                    ? 'bg-amber-400 hover:bg-amber-300 text-zinc-950 shadow-amber-500/10'
+                    : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700'
                 }`}
                 title={isPaused ? 'Clique para retomar a operação' : 'Clique para pausar imediatamente todas as abordagens'}
               >
                 {isPaused ? (
                   <>
-                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <Play className="w-3.5 h-3.5 fill-current text-zinc-950" />
                     <span>Retomar</span>
                   </>
                 ) : (
                   <>
-                    <Pause className="w-3.5 h-3.5 fill-current" />
+                    <Pause className="w-3.5 h-3.5 fill-current text-amber-400" />
                     <span>Pausar</span>
                   </>
                 )}
@@ -207,7 +199,7 @@ export default function Navbar() {
 
       {/* Chrome notification popup */}
       {chromeMsg && (
-        <div className="bg-amber-950 border-b border-amber-700 text-amber-200 px-4 py-2 text-xs text-center font-medium animate-in fade-in">
+        <div className="bg-amber-500/10 border-b border-amber-500/30 text-amber-300 px-4 py-2 text-xs text-center font-medium animate-in fade-in">
           {chromeMsg}
         </div>
       )}
