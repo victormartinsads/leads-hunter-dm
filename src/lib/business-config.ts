@@ -89,7 +89,7 @@ export function getBusinessConfig(): BusinessConfig {
     MIN_FOLLOWERS: 1000,
     MAX_FOLLOWERS: 200000,
     MIN_ICP_SCORE: 70,
-    REQUIRE_BUSINESS_ACCOUNT: false,
+    REQUIRE_BUSINESS_ACCOUNT: true,
     EXCLUDE_VERIFIED_ACCOUNTS: true,
     EXCLUDE_KEYWORDS: ["apostas", "cassino", "tigrinho", "politica", "memes", "futebol"]
   };
