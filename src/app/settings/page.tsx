@@ -16,7 +16,10 @@ import {
   MapPin,
   Tag,
   Trash2,
-  Plus
+  Plus,
+  ShieldAlert,
+  Filter,
+  Sliders
 } from 'lucide-react';
 import { BusinessConfig } from '@/lib/business-config';
 
@@ -30,6 +33,7 @@ export default function SettingsPage() {
   const [newSegment, setNewSegment] = useState('');
   const [newKeyword, setNewKeyword] = useState('');
   const [newAffiliateTopic, setNewAffiliateTopic] = useState('');
+  const [newExcludeKeyword, setNewExcludeKeyword] = useState('');
 
   useEffect(() => {
     fetch('/api/config')
@@ -115,6 +119,23 @@ export default function SettingsPage() {
     setConfig({ ...config, AFFILIATE_TOPICS: updated });
   };
 
+  const handleAddExcludeKeyword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExcludeKeyword.trim() || !config) return;
+    setConfig({
+      ...config,
+      EXCLUDE_KEYWORDS: [...(config.EXCLUDE_KEYWORDS || []), newExcludeKeyword.trim().toLowerCase()]
+    });
+    setNewExcludeKeyword('');
+  };
+
+  const handleRemoveExcludeKeyword = (index: number) => {
+    if (!config) return;
+    const updated = [...(config.EXCLUDE_KEYWORDS || [])];
+    updated.splice(index, 1);
+    setConfig({ ...config, EXCLUDE_KEYWORDS: updated });
+  };
+
   if (loading || !config) {
     return (
       <div className="text-center py-24 text-slate-400 text-xs">
@@ -133,7 +154,7 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-black text-white tracking-tight">Configurações do Negócio & ICP</h1>
         </div>
         <p className="text-xs text-slate-400 mt-1">
-          Defina quem é seu cliente ideal (ICP), palavras-chave de busca, links de atendimento e limites operacionais.
+          Defina quem é seu cliente ideal (ICP), critérios de qualificação, palavras-chave e limites operacionais.
         </p>
       </div>
 
@@ -144,6 +165,124 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* ICP Qualification Thresholds (NEW CARD FOR LEAD FILTERING) */}
+      <div className="bg-[#131b2e] border border-emerald-900/50 rounded-2xl p-6 shadow-xl space-y-6">
+        <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-800">
+          <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
+            <Sliders className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white">Sarrafo de Qualificação & Critérios do ICP</h2>
+            <p className="text-xs text-slate-400">Defina os parâmetros mínimos exigidos para que um lead seja considerado qualificado</p>
+          </div>
+        </div>
+
+        {/* 1. Followers & ICP Score Thresholds */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Mínimo de Seguidores</label>
+            <input
+              type="number"
+              value={config.MIN_FOLLOWERS ?? 1000}
+              onChange={(e) => setConfig({ ...config, MIN_FOLLOWERS: Number(e.target.value) })}
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            />
+            <span className="text-[10px] text-slate-500 mt-1 block">Ex: Ignora perfis com menos de 1.000 seguidores</span>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Máximo de Seguidores</label>
+            <input
+              type="number"
+              value={config.MAX_FOLLOWERS ?? 200000}
+              onChange={(e) => setConfig({ ...config, MAX_FOLLOWERS: Number(e.target.value) })}
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            />
+            <span className="text-[10px] text-slate-500 mt-1 block">Ex: Evita grandes celebridades (máx 200k)</span>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Score Mínimo do Gemini (0-100)</label>
+            <input
+              type="number"
+              value={config.MIN_ICP_SCORE ?? 70}
+              onChange={(e) => setConfig({ ...config, MIN_ICP_SCORE: Number(e.target.value) })}
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+            />
+            <span className="text-[10px] text-slate-500 mt-1 block">Ex: Só aborda se nota for &gt;= 70</span>
+          </div>
+        </div>
+
+        {/* 2. Toggles for Verified & Business */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-white block">Excluir Perfil Verificado (Selo Azul)</span>
+              <span className="text-[11px] text-slate-400 block">Evita gastar DMs com contas verificadas inacessíveis</span>
+            </div>
+            <input
+              type="checkbox"
+              checked={!!config.EXCLUDE_VERIFIED_ACCOUNTS}
+              onChange={(e) => setConfig({ ...config, EXCLUDE_VERIFIED_ACCOUNTS: e.target.checked })}
+              className="w-4 h-4 accent-emerald-500 cursor-pointer"
+            />
+          </div>
+
+          <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-white block">Exigir Conta Comercial / Business</span>
+              <span className="text-[11px] text-slate-400 block">Só aborda perfis identificados como empresa ou criador</span>
+            </div>
+            <input
+              type="checkbox"
+              checked={!!config.REQUIRE_BUSINESS_ACCOUNT}
+              onChange={(e) => setConfig({ ...config, REQUIRE_BUSINESS_ACCOUNT: e.target.checked })}
+              className="w-4 h-4 accent-emerald-500 cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {/* 3. Forbidden / Prohibited Keywords */}
+        <div className="space-y-3 pt-2">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4" />
+            <span>Palavras-chave Desqualificadoras (Filtro Anti-Spam / Nichos Proibidos):</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(config.EXCLUDE_KEYWORDS || []).map((kw, idx) => (
+              <span key={idx} className="bg-rose-950/60 border border-rose-800 text-rose-200 text-xs px-3 py-1.5 rounded-xl flex items-center space-x-2">
+                <span>🚫 {kw}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveExcludeKeyword(idx)}
+                  className="text-rose-400 hover:text-white"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Ex: apostas, cassino, tigrinho, futebol, memes..."
+              value={newExcludeKeyword}
+              onChange={(e) => setNewExcludeKeyword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddExcludeKeyword(e); }}
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+            />
+            <button
+              type="button"
+              onClick={handleAddExcludeKeyword}
+              className="px-3 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 rounded-xl text-xs font-semibold flex items-center space-x-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Bloquear Palavra</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* ICP Configuration Section (Target Audience & Keywords) */}
       <div className="bg-[#131b2e] border border-purple-900/50 rounded-2xl p-6 shadow-xl space-y-6">
         <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-800">
@@ -151,8 +290,8 @@ export default function SettingsPage() {
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">Configuração do ICP (Perfil de Cliente Ideal)</h2>
-            <p className="text-xs text-slate-400">Segmentos e palavras-chave que a IA utiliza para pontuar e qualificar cada perfil</p>
+            <h2 className="text-base font-bold text-white">Segmentos & Palavras-chave do ICP</h2>
+            <p className="text-xs text-slate-400">Termos positivos e nichos que orientam a busca e classificação da IA</p>
           </div>
         </div>
 

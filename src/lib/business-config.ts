@@ -25,6 +25,13 @@ export interface BusinessConfig {
   OPERATING_HOURS: string;
   OPERATING_TIMEZONE: string;
   SYSTEM_PAUSED: boolean;
+  // ICP Qualification Criteria
+  MIN_FOLLOWERS?: number;
+  MAX_FOLLOWERS?: number;
+  MIN_ICP_SCORE?: number;
+  REQUIRE_BUSINESS_ACCOUNT?: boolean;
+  EXCLUDE_VERIFIED_ACCOUNTS?: boolean;
+  EXCLUDE_KEYWORDS?: string[];
 }
 
 const configPath = path.join(process.cwd(), 'config', 'business.json');
@@ -78,7 +85,13 @@ export function getBusinessConfig(): BusinessConfig {
     MAX_SECONDS_BETWEEN_DMS: 240,
     OPERATING_HOURS: "09:00-20:00",
     OPERATING_TIMEZONE: "America/Sao_Paulo",
-    SYSTEM_PAUSED: false
+    SYSTEM_PAUSED: false,
+    MIN_FOLLOWERS: 1000,
+    MAX_FOLLOWERS: 200000,
+    MIN_ICP_SCORE: 70,
+    REQUIRE_BUSINESS_ACCOUNT: false,
+    EXCLUDE_VERIFIED_ACCOUNTS: true,
+    EXCLUDE_KEYWORDS: ["apostas", "cassino", "tigrinho", "politica", "memes", "futebol"]
   };
 }
 

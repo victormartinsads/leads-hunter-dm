@@ -18,17 +18,21 @@ import {
   AlertTriangle,
   Flame,
   Check,
-  ChevronRight
+  ChevronRight,
+  ShieldAlert,
+  Sliders
 } from 'lucide-react';
 import { ChromeIcon, InstagramIcon } from '@/components/Icons';
 import { Lead } from '@/db/schema';
 import { getPipelineStatusLabel, formatDateBR } from '@/lib/utils';
+import { evaluateLeadQualification } from '@/lib/qualification';
 
 export default function GuidedReviewPage() {
   const router = useRouter();
   const [pendingLeads, setPendingLeads] = useState<Lead[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [businessConfig, setBusinessConfig] = useState<any>({});
   
   // Message review state
   const [generatedMessage, setGeneratedMessage] = useState<string>('');
@@ -36,6 +40,13 @@ export default function GuidedReviewPage() {
   const [claimsUsed, setClaimsUsed] = useState<string[]>([]);
   const [generatingAi, setGeneratingAi] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(d => { if (d.config) setBusinessConfig(d.config); })
+      .catch(() => {});
+  }, []);
   
   // Sending state
   const [sending, setSending] = useState(false);
@@ -299,6 +310,55 @@ export default function GuidedReviewPage() {
             {currentLead.bio || 'Sem bio disponível'}
           </p>
         </div>
+
+        {/* Live Qualification Audit Card (SaaS Pro Max) */}
+        {(() => {
+          const qual = evaluateLeadQualification({
+            followerCount: currentLead.followerCount,
+            bio: currentLead.bio,
+            fullName: currentLead.fullName,
+            instagramHandle: currentLead.instagramHandle,
+            icpScore: currentLead.icpScore
+          }, businessConfig);
+
+          return (
+            <div className={`p-4 rounded-2xl border ${
+              qual.isQualified
+                ? 'bg-emerald-950/40 border-emerald-800/60'
+                : 'bg-amber-950/40 border-amber-800/60'
+            }`}>
+              <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-800/80">
+                <div className="flex items-center space-x-2">
+                  <Sliders className={`w-4 h-4 ${qual.isQualified ? 'text-emerald-400' : 'text-amber-400'}`} />
+                  <span className="text-xs font-bold uppercase tracking-wider text-white">
+                    Auditoria de Qualificação do ICP:
+                  </span>
+                </div>
+                <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                  qual.isQualified
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                }`}>
+                  {qual.summary}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                {qual.checks.map((chk, i) => (
+                  <div key={i} className="flex items-start space-x-1.5 text-slate-300 bg-slate-950/50 p-2 rounded-xl border border-slate-800/60">
+                    <span className={chk.passed ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                      {chk.passed ? '✓' : '✕'}
+                    </span>
+                    <div>
+                      <span className="font-semibold text-slate-200 block">{chk.rule}</span>
+                      <span className="text-slate-400 text-[10px]">{chk.detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* AI Pitch Generator & Editor Box */}
         <div className="space-y-3 pt-2">
