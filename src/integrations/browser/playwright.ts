@@ -10,23 +10,59 @@ export interface SendDmResult {
   error?: string;
 }
 
-// Global mutex to ensure only one browser automation runs at a time
 let isBrowserBusy = false;
 
 export async function checkChromeCdpStatus(): Promise<{ online: boolean; message: string }> {
   const cdpUrl = process.env.CHROME_CDP_URL || 'http://127.0.0.1:9222';
   try {
-    const res = await fetch(`${cdpUrl}/json/version`, { signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`${cdpUrl}/json/version`, { signal: AbortSignal.timeout(1200) });
     if (res.ok) {
       const data = await res.json();
-      return { online: true, message: `Chrome conectado: ${data.Browser || 'OK'}` };
+      return { online: true, message: `Chrome CDP conectado: ${data.Browser || 'OK'}` };
     }
-  } catch (e: any) {
-    // Offline or not responding
+  } catch {
+    // Offline
   }
+
+  // Check if executable exists
+  const execPath = chromium.executablePath();
+  if (fs.existsSync(execPath)) {
+    return { online: true, message: 'Navegador Playwright instalado e pronto para disparo autônomo!' };
+  }
+
+  return { online: false, message: 'Navegador indisponível.' };
+}
+
+export async function getBrowserContext() {
+  const cdpUrl = process.env.CHROME_CDP_URL || 'http://127.0.0.1:9222';
+  const cdpStatus = await checkChromeCdpStatus();
+
+  // Try CDP connection first if port 9222 is open
+  try {
+    const res = await fetch(`${cdpUrl}/json/version`, { signal: AbortSignal.timeout(1000) });
+    if (res.ok) {
+      const browser = await chromium.connectOverCDP(cdpUrl);
+      const context = browser.contexts()[0] || await browser.newContext();
+      return { context, isCdp: true, close: async () => {} };
+    }
+  } catch {
+    // Fallback to launch persistent context
+  }
+
+  // Launch dedicated Playwright Chromium browser on desktop
+  const profileDir = path.join(process.cwd(), '.chrome-profile');
+  if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir, { recursive: true });
+
+  const context = await chromium.launchPersistentContext(profileDir, {
+    headless: false,
+    viewport: { width: 1280, height: 800 },
+    args: ['--no-first-run', '--no-default-browser-check']
+  });
+
   return {
-    online: false,
-    message: 'Chrome não está aberto com --remote-debugging-port=9222. Inicie o Chrome dedicado.'
+    context,
+    isCdp: false,
+    close: async () => { await context.close().catch(() => {}); }
   };
 }
 
@@ -34,36 +70,23 @@ export async function discoverRealInstagramLeadsOverCdp(
   queryOrHashtag: string,
   limit: number = 20
 ): Promise<{ success: boolean; handles: { handle: string; fullName?: string; bio?: string; followerCount?: number }[]; message: string }> {
-  const cdpUrl = process.env.CHROME_CDP_URL || 'http://127.0.0.1:9222';
-  const status = await checkChromeCdpStatus();
-
-  if (!status.online) {
-    return {
-      success: false,
-      handles: [],
-      message: 'Chrome com porta de debug (9222) não encontrado. Abra o Chrome real no terminal primeiro para capturar perfis do Instagram em tempo real.'
-    };
-  }
-
   try {
-    const browser = await chromium.connectOverCDP(cdpUrl);
-    const context = browser.contexts()[0] || await browser.newContext();
-    const page = await context.newPage();
+    const { context, close } = await getBrowserContext();
+    const page = context.pages()[0] || await context.newPage();
 
     const searchTerm = queryOrHashtag.replace('#', '').trim();
-    console.log(`[Browser CDP Scraping] Pesquisando perfis reais no Instagram para: "${searchTerm}"...`);
+    console.log(`[Browser Discovery] Navegando no Instagram para hashtag: "#${searchTerm}"...`);
 
-    // Navigate to Instagram search or explore
     await page.goto(`https://www.instagram.com/explore/tags/${encodeURIComponent(searchTerm)}/`, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(3000);
 
-    // Extract all user profile links from page DOM
+    // Extract user profile links from Instagram DOM
     const rawLinks = await page.evaluate(() => {
       const anchors = Array.from(document.querySelectorAll('a[href^="/"]'));
       return anchors.map(a => a.getAttribute('href')).filter(Boolean);
     });
 
-    const ignoredPaths = ['/explore/', '/reels/', '/direct/', '/stories/', '/accounts/', '/legal/', '/about/'];
+    const ignoredPaths = ['/explore/', '/reels/', '/direct/', '/stories/', '/accounts/', '/legal/', '/about/', '/p/'];
     const extractedHandles = new Set<string>();
 
     for (const link of rawLinks) {
@@ -80,11 +103,11 @@ export async function discoverRealInstagramLeadsOverCdp(
     const handlesList = Array.from(extractedHandles).slice(0, limit).map(h => ({
       handle: h,
       fullName: `Perfil Real (${searchTerm})`,
-      bio: `Perfil público encontrado no Instagram via busca real por #${searchTerm}`,
+      bio: `Perfil público capturado no Instagram via busca real por #${searchTerm}`,
       followerCount: Math.floor(Math.random() * 5000) + 500
     }));
 
-    await page.close().catch(() => {});
+    await close();
 
     return {
       success: true,
@@ -93,11 +116,11 @@ export async function discoverRealInstagramLeadsOverCdp(
     };
 
   } catch (err: any) {
-    console.error('Error discovering real leads over CDP:', err);
+    console.error('Error discovering real leads:', err);
     return {
       success: false,
       handles: [],
-      message: `Erro na busca real do Instagram: ${err.message}`
+      message: `Erro na busca do Instagram: ${err.message}`
     };
   }
 }
@@ -108,7 +131,6 @@ export async function sendInstagramDmOverCdp(
   options: { dryRun?: boolean } = {}
 ): Promise<SendDmResult> {
   const handle = targetHandle.replace('@', '').trim();
-  const cdpUrl = process.env.CHROME_CDP_URL || 'http://127.0.0.1:9222';
 
   if (isBrowserBusy) {
     return {
@@ -121,27 +143,11 @@ export async function sendInstagramDmOverCdp(
   isBrowserBusy = true;
 
   try {
-    // 1. Check if Chrome CDP is reachable
-    const status = await checkChromeCdpStatus();
-    if (!status.online) {
-      return {
-        success: false,
-        isRealBrowser: false,
-        message: 'Chrome com porta de debug (9222) não encontrado. Abra o Chrome no terminal primeiro.',
-        error: 'CHROME_CDP_UNAVAILABLE'
-      };
-    }
-
-    // 2. Connect to existing Chrome instance
-    const browser = await chromium.connectOverCDP(cdpUrl);
-    const context = browser.contexts()[0] || await browser.newContext();
-    
-    // Create dedicated agent tab (never touches user existing tabs)
+    const { context, close } = await getBrowserContext();
     const page = await context.newPage();
 
     try {
-      // 3. Navigate to target profile
-      console.log(`[Browser CDP] Navegando até https://www.instagram.com/${handle}/`);
+      console.log(`[Browser Direct] Navegando até https://www.instagram.com/${handle}/`);
       await page.goto(`https://www.instagram.com/${handle}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(2000);
 
@@ -151,12 +157,12 @@ export async function sendInstagramDmOverCdp(
         return {
           success: false,
           isRealBrowser: true,
-          message: 'Você ainda não está logado no Instagram no Chrome dedicado. Faça login na janela do Chrome aberta.',
+          message: 'Você ainda não está logado no Instagram no navegador aberto. Faça login na janela que abriu no desktop.',
           error: 'INSTAGRAM_NOT_LOGGED_IN'
         };
       }
 
-      // Check if profile exists
+      // Check profile page title
       const pageTitle = await page.title();
       if (pageTitle.includes('Page Not Found') || pageTitle.includes('Página não encontrada')) {
         return {
@@ -167,14 +173,13 @@ export async function sendInstagramDmOverCdp(
         };
       }
 
-      // 4. Click "Enviar mensagem" / "Message" button
+      // Click Message button
       const messageBtnSelectors = [
         'div[role="button"]:has-text("Enviar mensagem")',
         'div[role="button"]:has-text("Message")',
         'button:has-text("Enviar mensagem")',
         'button:has-text("Message")',
         'a:has-text("Enviar mensagem")',
-        'header section div:has-text("Enviar mensagem")',
       ];
 
       let clickedMessageBtn = false;
@@ -188,21 +193,18 @@ export async function sendInstagramDmOverCdp(
       }
 
       if (!clickedMessageBtn) {
-        // Direct fallback to direct message URL
-        console.log(`[Browser CDP] Abrindo direct inbox para @${handle}...`);
-        await page.goto(`https://www.instagram.com/direct/new/`, { timeout: 20000 });
+        await page.goto(`https://www.instagram.com/direct/new/`, { timeout: 20000 }).catch(() => {});
         await page.waitForTimeout(2000);
       }
 
       await page.waitForTimeout(2500);
 
-      // 5. Locate chat input area
+      // Locate chat input area
       const inputSelectors = [
         'div[role="textbox"][contenteditable="true"]',
         'textarea[placeholder*="Mensagem"]',
         'textarea[placeholder*="Message"]',
-        'div[aria-label*="Mensagem"][contenteditable="true"]',
-        'div[aria-label*="Message"][contenteditable="true"]'
+        'div[aria-label*="Mensagem"][contenteditable="true"]'
       ];
 
       let inputElement = null;
@@ -215,7 +217,6 @@ export async function sendInstagramDmOverCdp(
       }
 
       if (!inputElement) {
-        // Save failure screenshot for debugging
         const screenshotDir = path.join(process.cwd(), 'data', 'screenshots');
         if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
         const screenshotPath = path.join(screenshotDir, `fail_${handle}_${Date.now()}.png`);
@@ -224,18 +225,16 @@ export async function sendInstagramDmOverCdp(
         return {
           success: false,
           isRealBrowser: true,
-          message: `Não foi possível localizar o campo de texto do Direct para @${handle}. O perfil pode ter DMs bloqueadas para desconhecidos.`,
+          message: `Não foi possível localizar o campo de texto do Direct para @${handle}.`,
           screenshotPath,
           error: 'DIRECT_INPUT_NOT_FOUND'
         };
       }
 
-      // 6. Focus and type human-like
       await inputElement.click();
       await page.waitForTimeout(500);
 
       if (options.dryRun) {
-        console.log(`[Browser CDP] Modo Dry-Run ativo: digitação simulada sem envio real.`);
         return {
           success: true,
           isRealBrowser: true,
@@ -243,15 +242,12 @@ export async function sendInstagramDmOverCdp(
         };
       }
 
-      // Human-like typing delay (40-90ms per character)
       await inputElement.pressSequentially(messageText, { delay: 45 });
       await page.waitForTimeout(800);
 
-      // 7. Press Enter to send
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
 
-      // Save confirmation screenshot
       const screenshotDir = path.join(process.cwd(), 'data', 'screenshots');
       if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
       const screenshotPath = path.join(screenshotDir, `sent_${handle}_${Date.now()}.png`);
@@ -265,8 +261,8 @@ export async function sendInstagramDmOverCdp(
       };
 
     } finally {
-      // Clean up tab
       await page.close().catch(() => {});
+      await close();
     }
 
   } catch (err: any) {

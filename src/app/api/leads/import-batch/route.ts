@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { discoverRealInstagramLeadsOverCdp, checkChromeCdpStatus } from '@/integrations/browser/playwright';
+import { discoverRealInstagramLeadsOverCdp } from '@/integrations/browser/playwright';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,20 +29,14 @@ export async function POST(req: NextRequest) {
       }));
 
     } else if (mode === 'hashtag' && hashtag) {
-      // 2. Real Instagram Search over Chrome CDP
-      const cdpStatus = await checkChromeCdpStatus();
-      if (cdpStatus.online) {
-        const realScrape = await discoverRealInstagramLeadsOverCdp(hashtag, countToImport);
-        if (realScrape.success && realScrape.handles.length > 0) {
-          targetProfiles = realScrape.handles;
-        }
-      }
-
-      // If Chrome CDP was not open or returned 0, inform user to open Chrome or paste handles
-      if (targetProfiles.length === 0) {
+      // 2. Real Instagram Search via Chromium / CDP
+      const realScrape = await discoverRealInstagramLeadsOverCdp(hashtag, countToImport);
+      if (realScrape.success && realScrape.handles.length > 0) {
+        targetProfiles = realScrape.handles;
+      } else {
         return NextResponse.json({
           success: false,
-          error: 'O Chrome dedicado não está aberto na porta 9222 para realizar a busca REAL no Instagram. Abra o Chrome no terminal clicando em "Abrir Chrome (1-Clique)" ou selecione a opção "@ Lista de Handles" para colar os perfis reais que deseja prospectar.'
+          error: realScrape.message || 'Não foi possível capturar perfis reais no Instagram para esta hashtag. Tente colar os @handles na aba "@ Lista de Handles Reais".'
         }, { status: 400 });
       }
     }

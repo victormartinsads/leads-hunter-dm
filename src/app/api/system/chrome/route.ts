@@ -11,7 +11,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const action = body.action || 'launch';
 
     if (action === 'launch') {
