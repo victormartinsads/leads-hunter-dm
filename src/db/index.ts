@@ -284,6 +284,10 @@ export const db = {
     delete: (id: string) => {
       getDatabase().prepare('DELETE FROM messages WHERE leadId = ?').run(id);
       getDatabase().prepare('DELETE FROM leads WHERE id = ?').run(id);
+    },
+    deleteAll: () => {
+      getDatabase().prepare('DELETE FROM messages').run();
+      getDatabase().prepare('DELETE FROM leads').run();
     }
   },
 
