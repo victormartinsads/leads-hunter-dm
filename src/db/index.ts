@@ -184,9 +184,9 @@ function seedInitialData(sqlite: DatabaseSync) {
     {
       id: 'lead_5',
       instagramHandle: '@studio.glowestetica',
-      fullName: 'Studio Glow Estética',
-      bio: 'Realçando sua beleza natural | Limpeza, Peeling e Botox | Curitiba',
-      followerCount: 5300,
+      fullName: 'Studio Glow Estética | Jardim Ângela SP',
+      bio: 'GLOW ESTÉTICA | Jardim Ângela SP | Limpeza de pele, depilação e estética corporal',
+      followerCount: 37,
       isBusiness: 1,
       icpScore: 78,
       priority: 'low',
