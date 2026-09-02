@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Search, Sparkles, Download, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { InstagramIcon, ChromeIcon } from './Icons';
 
@@ -18,7 +18,24 @@ export default function InstagramImportModal({ isOpen, onClose, onImported }: In
   const [funnelType, setFunnelType] = useState<'customer' | 'affiliate'>('customer');
   const [loading, setLoading] = useState(false);
   const [launchingChrome, setLaunchingChrome] = useState(false);
+  const [chromeOnline, setChromeOnline] = useState<boolean | null>(null);
   const [resultMessage, setResultMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const checkChrome = async () => {
+    try {
+      const res = await fetch('/api/system/chrome');
+      const data = await res.json();
+      setChromeOnline(data.online);
+    } catch {
+      setChromeOnline(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      checkChrome();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -28,7 +45,8 @@ export default function InstagramImportModal({ isOpen, onClose, onImported }: In
       const res = await fetch('/api/system/chrome', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        setResultMessage({ type: 'success', text: 'Chrome dedicado iniciado na porta 9222! Agora clique em "Capturar Lote de 20 Perfis Agora".' });
+        setChromeOnline(true);
+        setResultMessage({ type: 'success', text: 'Chrome dedicado iniciado na porta 9222! Agora você pode capturar a hashtag ao vivo.' });
       } else {
         setResultMessage({ type: 'error', text: data.message || 'Não foi possível abrir o Chrome.' });
       }
@@ -58,12 +76,10 @@ export default function InstagramImportModal({ isOpen, onClose, onImported }: In
       });
 
       let data: any = {};
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
+      try {
         data = await res.json();
-      } else {
-        const rawText = await res.text();
-        throw new Error(`Servidor retornou erro HTML: ${res.status}`);
+      } catch (err) {
+        data = { error: `Servidor retornou erro (Código ${res.status})` };
       }
 
       if (res.ok && data.success) {
@@ -106,6 +122,34 @@ export default function InstagramImportModal({ isOpen, onClose, onImported }: In
           </button>
         </div>
 
+        {/* Chrome Status Banner */}
+        <div className="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-800 text-xs">
+          <div className="flex items-center space-x-2">
+            <ChromeIcon className="w-4 h-4 text-amber-400" />
+            <span className="text-zinc-300 font-medium">Status do Chrome:</span>
+            {chromeOnline === true ? (
+              <span className="text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+                Online (Porta 9222)
+              </span>
+            ) : (
+              <span className="text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                Offline
+              </span>
+            )}
+          </div>
+
+          {chromeOnline !== true && (
+            <button
+              type="button"
+              onClick={handleLaunchChrome}
+              disabled={launchingChrome}
+              className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-zinc-950 rounded-lg text-[11px] font-extrabold cursor-pointer transition-all"
+            >
+              {launchingChrome ? 'Abrindo...' : '1-Clique: Abrir'}
+            </button>
+          )}
+        </div>
+
         {/* Feedback Alert Box */}
         {resultMessage && (
           <div className={`p-3.5 rounded-xl text-xs flex flex-col space-y-2 border ${
@@ -121,28 +165,6 @@ export default function InstagramImportModal({ isOpen, onClose, onImported }: In
               )}
               <span className="leading-relaxed">{resultMessage.text}</span>
             </div>
-
-            {/* Quick Action Button if Chrome CDP is offline */}
-            {resultMessage.type === 'error' && resultMessage.text.includes('Chrome') && (
-              <div className="pt-1 flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={handleLaunchChrome}
-                  disabled={launchingChrome}
-                  className="px-3 py-1.5 bg-amber-400 text-zinc-950 rounded-lg font-extrabold text-[11px] flex items-center space-x-1 cursor-pointer"
-                >
-                  <ChromeIcon className="w-3.5 h-3.5 text-zinc-950" />
-                  <span>{launchingChrome ? 'Iniciando Chrome...' : '1-Clique: Abrir Chrome Dedicado'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMode('handles'); setResultMessage(null); }}
-                  className="px-2.5 py-1.5 bg-zinc-900 text-zinc-300 rounded-lg text-[11px] font-semibold border border-zinc-700 cursor-pointer"
-                >
-                  Usar Lista de Perfis
-                </button>
-              </div>
-            )}
           </div>
         )}
 
