@@ -9,6 +9,36 @@ export interface SendDmResult {
   screenshotPath?: string;
   isRealBrowser: boolean;
   error?: string;
+  exactFollowerCount?: number;
+}
+
+export async function extractFollowersFromPageDom(page: any): Promise<number | null> {
+  try {
+    const rawText = await page.evaluate(() => {
+      const listItems = Array.from(document.querySelectorAll('header section ul li, header ul li'));
+      for (const item of listItems) {
+        const text = item.textContent || '';
+        if (text.includes('seguidores') || text.includes('followers')) {
+          const titleSpan = item.querySelector('span[title]');
+          if (titleSpan) return titleSpan.getAttribute('title');
+          return text;
+        }
+      }
+      return null;
+    });
+
+    if (rawText) {
+      const cleaned = rawText.replace(/\./g, '').replace(/,/g, '.');
+      const numMatch = cleaned.match(/([\d.]+)/);
+      if (numMatch) {
+        const parsed = Math.round(parseFloat(numMatch[1]));
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error extracting followers from DOM:', e);
+  }
+  return null;
 }
 
 let isBrowserBusy = false;
@@ -162,6 +192,11 @@ export async function sendInstagramDmOverCdp(
       await page.goto(`https://www.instagram.com/${handle}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(2000);
 
+      const exactFollowerCount = await extractFollowersFromPageDom(page);
+      if (exactFollowerCount) {
+        console.log(`[Browser Direct] Contagem real de seguidores extraída para @${handle}: ${exactFollowerCount}`);
+      }
+
       const isLoginPage = page.url().includes('/accounts/login');
       if (isLoginPage) {
         return {
@@ -264,7 +299,8 @@ export async function sendInstagramDmOverCdp(
         success: true,
         isRealBrowser: true,
         message: `Mensagem real enviada com sucesso no Direct para @${handle}!`,
-        screenshotPath
+        screenshotPath,
+        exactFollowerCount: exactFollowerCount || undefined
       };
 
     } finally {
