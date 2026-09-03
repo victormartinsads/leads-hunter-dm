@@ -104,7 +104,7 @@ export default function GuidedReviewPage() {
     setEditingFollowers(false);
     setNewFollowerCount(lead.followerCount || 0);
 
-    const activeService = customService || selectedServiceMap[lead.id] || recommendEntryService(lead).name;
+    const activeService = customService || selectedServiceMap[lead.id] || recommendEntryService(lead).service.name;
 
     try {
       const res = await fetch('/api/ai/simulate', {
@@ -434,15 +434,15 @@ export default function GuidedReviewPage() {
 
           {/* Diagnostic Entry Offer Service Card */}
           {(() => {
-            const recommended = recommendEntryService(currentLead);
-            const activeService = selectedServiceMap[currentLead.id] || recommended.name;
-            const matchedObj = DEFAULT_ENTRY_SERVICES.find(s => s.name === activeService) || recommended;
+            const recResult = recommendEntryService(currentLead);
+            const activeService = selectedServiceMap[currentLead.id] || recResult.service.name;
+            const matchedObj = DEFAULT_ENTRY_SERVICES.find(s => s.name === activeService) || recResult.service;
 
             return (
-              <div className="bg-gradient-to-r from-amber-950/20 via-[#18181b] to-[#18181b] border border-amber-500/30 rounded-xl p-4 space-y-2">
+              <div className="bg-gradient-to-r from-amber-950/20 via-[#18181b] to-[#18181b] border border-amber-500/30 rounded-xl p-4 space-y-2.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-amber-400" />
+                    <Target className="w-4 h-4 text-amber-400 shrink-0" />
                     <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Serviço de Entrada Recomendado:</span>
                   </div>
 
@@ -463,9 +463,12 @@ export default function GuidedReviewPage() {
                   </select>
                 </div>
 
-                <p className="text-[11px] text-zinc-300 leading-relaxed">
-                  💡 <strong className="text-amber-300">Diagnóstico da Oferta:</strong> {matchedObj.oneLineHook}
-                </p>
+                <div className="text-[11px] text-zinc-300 space-y-1 bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-800/60 font-sans">
+                  <p>💡 <strong className="text-amber-300">Gancho da Oferta:</strong> {matchedObj.oneLineHook}</p>
+                  <p className="text-[10px] text-zinc-400 pt-0.5 border-t border-zinc-800/60">
+                    🎯 <strong className="text-zinc-300">Diagnóstico do Perfil (@{currentLead.instagramHandle.replace('@', '')}):</strong> {recResult.reason}
+                  </p>
+                </div>
               </div>
             );
           })()}

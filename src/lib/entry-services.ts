@@ -8,6 +8,11 @@ export interface EntryService {
   isEnabled: boolean;
 }
 
+export interface ServiceRecommendationResult {
+  service: EntryService;
+  reason: string;
+}
+
 export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
   {
     id: 'chatbot',
@@ -69,30 +74,51 @@ export function recommendEntryService(lead: {
   bio?: string | null;
   fullName?: string | null;
   instagramHandle: string;
-}): EntryService {
+}): ServiceRecommendationResult {
   const text = `${lead.bio || ''} ${lead.fullName || ''} ${lead.instagramHandle}`.toLowerCase();
+  const handle = lead.instagramHandle;
 
   // 1. Clinics, Dentists, Aesthetics, Doctors -> Chatbot 24/7
   if (/(clinica|clínica|dra|dr|odontologia|odonto|estetica|estética|resina|facetas|harmonizacao|consultorio|consultório|medica|médica|sorriso|dentista)/i.test(text)) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
+    const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
+    return {
+      service: srv,
+      reason: `Nicho de Odontologia/Saúde/Estética identificado no perfil (${handle}). Clínicas perdem até 40% dos agendamentos no Direct fora do horário comercial.`
+    };
   }
 
-  // 2. Agencies, Marketing, Media, B2B Consultants -> Automação N8N or CRM Whitelabel
+  // 2. Agencies, Marketing, Media, B2B Consultants -> Automação N8N
   if (/(agencia|agência|midia|mídia|marketing|consultoria|b2b|assessoria|digital)/i.test(text)) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[4];
+    const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[4];
+    return {
+      service: srv,
+      reason: `Perfil de Agência/Mídia/Consultoria B2B (${handle}). Necessidade crítica de integrar formulários, CRM e qualificação de clientes via automações N8N.`
+    };
   }
 
   // 3. Stores, E-commerce, Commerce, Products -> Gestão de Tráfego Pago (R$ 1.300/mês)
   if (/(loja|store|boutique|vendas|produtos|entrega|fashion|moda|calcados|calçados|joias)/i.test(text)) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'paid_traffic') || DEFAULT_ENTRY_SERVICES[5];
+    const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'paid_traffic') || DEFAULT_ENTRY_SERVICES[5];
+    return {
+      service: srv,
+      reason: `Perfil Comercial/E-commerce/Vendas (${handle}). Recomendada atração de novos compradores diariamente via Tráfego Pago Meta & Google Ads (R$ 1.300,00/mês).`
+    };
   }
 
   // 4. Absence of website link -> Website com IA
   const hasWebsiteSignal = /(http|https|\.com|\.br|linktr\.ee|beacons)/i.test(text);
   if (!hasWebsiteSignal) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'website') || DEFAULT_ENTRY_SERVICES[1];
+    const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'website') || DEFAULT_ENTRY_SERVICES[1];
+    return {
+      service: srv,
+      reason: `Sem link de site oficial ou landing page na bio do perfil (${handle}). Oportunidade de criar Website de Alta Conversão já com atendente virtual de IA.`
+    };
   }
 
   // Default fallback: Chatbot 24/7
-  return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
+  const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
+  return {
+    service: srv,
+    reason: `Perfil comercial ativo no Instagram (${handle}). Recomendado Chatbot de Triagem e Qualificação 24h para automatizar dúvidas de clientes.`
+  };
 }
