@@ -79,8 +79,8 @@ export function buildStep2PitchDM(targetService?: string): { pitch: string; reas
 
   if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
     return {
-      pitch: `Eu vi que vocês ainda não colocam anúncios aqui no Insta pra atrair novos clientes todo santo dia. Faria sentido pra vocês ter um sistema trazendo pessoas interessadas na sua empresa diariamente por R$ 1.300 por mês?`,
-      reasoning: `Pitch humano focado no benefício direto de atração diária de clientes (Tráfego Pago R$ 1.300/mês).`
+      pitch: `Eu vi que vocês ainda não colocam anúncios aqui no Insta pra atrair novos clientes todo santo dia. Faria sentido pra vocês ter um sistema trazendo pessoas interessadas na sua empresa diariamente?`,
+      reasoning: `Pitch humano focado no benefício direto de atração diária de novos clientes.`
     };
   }
 
