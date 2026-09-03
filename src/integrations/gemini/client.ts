@@ -16,8 +16,9 @@ export function getGeminiClient(): GoogleGenerativeAI | null {
 }
 
 export function getGeminiModelName(isFast: boolean = false): string {
-  if (isFast) {
-    return process.env.GEMINI_MODEL_FAST || 'gemini-3.6-flash';
+  const envModel = isFast ? process.env.GEMINI_MODEL_FAST : process.env.GEMINI_MODEL;
+  if (envModel && !envModel.includes('3.6')) {
+    return envModel;
   }
-  return process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  return 'gemini-1.5-flash';
 }

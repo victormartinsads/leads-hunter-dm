@@ -28,6 +28,65 @@ export interface ClaimAuditResult {
   feedback: string;
 }
 
+export function buildDynamicServiceDM(leadProfile: {
+  instagramHandle: string;
+  fullName?: string;
+  bio?: string;
+  targetService?: string;
+}): { message: string; reasoning: string } {
+  const rawName = leadProfile.fullName && leadProfile.fullName.trim() ? leadProfile.fullName.split(' ')[0] : '';
+  const nameStr = rawName ? rawName : leadProfile.instagramHandle.replace('@', '');
+  const handleName = leadProfile.instagramHandle;
+  const service = (leadProfile.targetService || '').toLowerCase();
+
+  if (service.includes('chatbot') || service.includes('atendimento')) {
+    return {
+      message: `Olá ${nameStr}, tudo bem? Excelente trabalho no perfil ${handleName}. Vocês costumam receber muitas mensagens de clientes no Direct fora do horário comercial?`,
+      reasoning: `Focado no serviço de Chatbot 24/7 para tratar perda de mensagens no Direct.`
+    };
+  }
+
+  if (service.includes('website') || service.includes('site')) {
+    return {
+      message: `Olá ${nameStr}, tudo bem? Acompanhando as postagens do perfil ${handleName}! Vocês já têm um site de alta conversão com atendente de IA integrado para capturar leads?`,
+      reasoning: `Focado na oferta de Website Institucional com Agente de IA.`
+    };
+  }
+
+  if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
+    return {
+      message: `Fala ${nameStr}! Parabéns pela presença do perfil ${handleName}. Vocês já rodam campanhas de tráfego pago no Meta e Google Ads para atração diária de clientes?`,
+      reasoning: `Focado na oferta de Gestão de Tráfego Pago (R$ 1.300,00/mês).`
+    };
+  }
+
+  if (service.includes('n8n') || service.includes('automaç')) {
+    return {
+      message: `Olá ${nameStr}! Muito bacana a rotina do perfil ${handleName}. Hoje vocês usam automações no N8N para integrar formulários e WhatsApp ao sistema de vocês?`,
+      reasoning: `Focado no serviço de Automação de Processos com N8N.`
+    };
+  }
+
+  if (service.includes('white label') || service.includes('whitelabel')) {
+    return {
+      message: `Fala ${nameStr}! Parabéns pela estrutura da ${handleName}. Vocês já utilizam uma plataforma própria de CRM comercial com a sua marca?`,
+      reasoning: `Focado no serviço de CRM White Label.`
+    };
+  }
+
+  if (service.includes('crm')) {
+    return {
+      message: `Olá ${nameStr}! Como o time da ${handleName} costuma organizar o histórico e o acompanhamento dos leads que chegam pelo Instagram?`,
+      reasoning: `Focado na oferta de CRM Simples em Servidor Próprio.`
+    };
+  }
+
+  return {
+    message: `Olá ${nameStr}, tudo bem? Vi o trabalho do perfil ${handleName} no Instagram e achei excelente! Como vocês gerenciam as dúvidas de clientes que chegam por aqui?`,
+    reasoning: `Abordagem comercial consultiva focada no atendimento do nicho.`
+  };
+}
+
 export async function generateIcebreaker(
   leadProfile: {
     instagramHandle: string;
@@ -42,9 +101,10 @@ export async function generateIcebreaker(
 ): Promise<IcebreakerResult> {
   const client = getGeminiClient();
   const modelName = getGeminiModelName(false);
+  const dynamicFallback = buildDynamicServiceDM(leadProfile);
 
   const targetServiceText = leadProfile.targetService
-    ? `\n- SERVIÇO DE ENTRADA ALVO DA ABORDAGEM: "${leadProfile.targetService}". Foque a pergunta/gancho inicial sutilmente na dor resolvida por este serviço.`
+    ? `\n- SERVIÇO DE ENTRADA ALVO DA ABORDAGEM: "${leadProfile.targetService}". Sua primeira frase deve focar EXCLUSIVAMENTE em fazer um gancho ou pergunta sobre este serviço de entrada!`
     : '';
 
   const promptText = `
@@ -62,34 +122,26 @@ Você precisa redigir uma primeira mensagem curta, personalizada e humana para i
 CRITÉRIOS OBRIGATÓRIOS:
 1. Máximo de 2 a 3 frases curtas.
 2. Elogie ou cite algo real da bio ou nicho do lead.
-3. Faça uma pergunta aberta leve sobre a rotina/desafio de atendimento no direct.
+3. Faça uma pergunta aberta leve focada na dor do SERVIÇO DE ENTRADA ALVO.
 4. NUNCA envie links na primeira mensagem.
 5. SÓ use informações contidas em VERIFIED_CLAIMS.
 
 Responda em formato JSON válido com as chaves:
 {
   "message": "Texto exato da DM a ser enviada",
-  "variant": "A_casual_compliment ou B_problem_aware",
+  "variant": "A_service_focused",
   "claimsUsed": ["lista de claims verificadas usadas, se houver"],
-  "reasoning": "Por que essa abordagem foi escolhida para este perfil"
+  "reasoning": "Por que essa abordagem foi escolhida para este perfil e serviço"
 }
 `;
 
   if (!client) {
-    // Smart simulated response when API key is not configured
-    const firstName = leadProfile.fullName ? leadProfile.fullName.split(' ')[0] : leadProfile.instagramHandle.replace('@', '');
-    const isAffiliate = leadProfile.funnelType === 'affiliate';
-    
-    const fallbackMessage = isAffiliate
-      ? `Fala ${firstName}! Vi a qualidade dos seus conteúdos sobre vendas aqui no perfil, parabéns pelo engajamento. Você já trabalha com indicação de ferramentas para a sua audiência?`
-      : `Olá ${firstName}, tudo bem? Vi seu perfil aqui no Instagram e achei o catálogo muito bacana! Vocês costumam receber muito direct de clientes querendo comprar por aqui?`;
-
     return {
-      message: fallbackMessage,
-      variant: 'A_casual_compliment (Simulado Gemini)',
-      claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema local seguro'],
-      reasoning: 'Gerado via motor de fallback inteligente (Configure GEMINI_API_KEY no .env para chamadas ativas na API do Google)',
-      modelUsed: 'gemini-2.5-flash (local fallback)'
+      message: dynamicFallback.message,
+      variant: 'A_dynamic_service_focused',
+      claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema seguro'],
+      reasoning: `${dynamicFallback.reasoning} (Modo Simulado Dinâmico)`,
+      modelUsed: 'gemini-1.5-flash (local)'
     };
   }
 
@@ -98,7 +150,6 @@ Responda em formato JSON válido com as chaves:
     const result = await model.generateContent(promptText);
     const responseText = result.response.text();
     
-    // Extract JSON from output
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -112,22 +163,22 @@ Responda em formato JSON válido com as chaves:
       });
 
       return {
-        message: parsed.message,
+        message: parsed.message || dynamicFallback.message,
         variant: parsed.variant || 'A_gemini_generated',
         claimsUsed: parsed.claimsUsed || [],
-        reasoning: parsed.reasoning || 'Gerado com base no contexto do perfil.',
+        reasoning: parsed.reasoning || dynamicFallback.reasoning,
         modelUsed: modelName
       };
     }
-  } catch (error) {
-    console.error('Error in Gemini generateIcebreaker:', error);
+  } catch (error: any) {
+    console.error('Error in Gemini generateIcebreaker:', error.message);
   }
 
   return {
-    message: `Olá! Vi seu perfil no Instagram e achei seu trabalho excelente. Como vocês costumam gerenciar o atendimento dos directs que chegam por aqui?`,
-    variant: 'A_fallback',
+    message: dynamicFallback.message,
+    variant: 'A_dynamic_fallback',
     claimsUsed: [],
-    reasoning: 'Fallback seguro após tentativa de geração.',
+    reasoning: dynamicFallback.reasoning,
     modelUsed: modelName
   };
 }
@@ -205,7 +256,7 @@ Responda em formato JSON válido:
         suggestedReply: 'Entendido perfeitamente! Não enviaremos mais mensagens por aqui. Sucesso nos seus negócios!',
         claimsUsed: [],
         reasoning: 'Lead expressou desejo de encerrar contato. Marcado como do_not_contact imediatamente.',
-        modelUsed: 'gemini-2.5-flash (local fallback)'
+        modelUsed: 'gemini-1.5-flash (local)'
       };
     }
 
@@ -216,7 +267,7 @@ Responda em formato JSON válido:
         suggestedReply: `Perfeito! O sistema roda 100% local com IA Gemini e organiza todo o fluxo de direct. Me chama no WhatsApp para eu te enviar uma demonstração prática: ${config.WHATSAPP_LINK}`,
         claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema local seguro', config.VERIFIED_CLAIMS[1] || 'IA Gemini'],
         reasoning: 'Lead solicitou mais detalhes/WhatsApp. Direcionando com link oficial sem promessas não verificadas.',
-        modelUsed: 'gemini-2.5-flash (local fallback)'
+        modelUsed: 'gemini-1.5-flash (local)'
       };
     }
 
@@ -226,7 +277,7 @@ Responda em formato JSON válido:
       suggestedReply: `Excelente! Nosso sistema qualifica leads de forma 100% personalizada e conecta direto com a API Oficial. Hoje vocês fazem todo esse trabalho manualmente?`,
       claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Operação local'],
       reasoning: 'Lead demonstrou abertura. Resposta conduzindo para qualificação respeitando claims verificadas.',
-      modelUsed: 'gemini-2.5-flash (local fallback)'
+      modelUsed: 'gemini-1.5-flash (local)'
     };
   }
 
@@ -279,7 +330,6 @@ export async function auditClaimCompliance(
 
   const lowerText = textToAudit.toLowerCase();
 
-  // Check unverified claims in local text
   for (const unverified of config.UNVERIFIED_CLAIMS) {
     const keywords = unverified.toLowerCase().split(' ').filter(w => w.length > 4);
     const matchCount = keywords.filter(k => lowerText.includes(k)).length;
@@ -288,7 +338,6 @@ export async function auditClaimCompliance(
     }
   }
 
-  // Check verified claims
   for (const verified of config.VERIFIED_CLAIMS) {
     const keywords = verified.toLowerCase().split(' ').filter(w => w.length > 4);
     const matchCount = keywords.filter(k => lowerText.includes(k)).length;
@@ -297,7 +346,6 @@ export async function auditClaimCompliance(
     }
   }
 
-  // Check common prohibited patterns
   if (lowerText.includes('garantido') || lowerText.includes('100% de certeza') || lowerText.includes('fique rico') || lowerText.includes('sem risco')) {
     violations.push('Uso de termos de garantia absoluta ou promessas irreais não autorizadas.');
   }

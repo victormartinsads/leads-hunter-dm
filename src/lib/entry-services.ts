@@ -15,7 +15,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     category: 'chatbot',
     priceLabel: 'Sob Medida / Mensalidade',
     oneLineHook: 'Elimine a perda de clientes fora do horário comercial com um agente de IA no WhatsApp que qualifica e agende 24h.',
-    matchRules: 'Clínicas, estéticas, consultórios, estúdios e empresas com alto volume de mensagens no Direct/WhatsApp.',
+    matchRules: 'Clínicas, estéticas, consultórios, odontologia e empresas com alto volume de mensagens no Direct/WhatsApp.',
     isEnabled: true
   },
   {
@@ -51,7 +51,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     category: 'n8n',
     priceLabel: 'Fluxo por Demanda',
     oneLineHook: 'Conecte seu WhatsApp, formulários, CRM e sistemas sem trabalho manual via fluxos automáticos no N8N.',
-    matchRules: 'Empresas com processos operacionais repetitivos e dados espalhados.',
+    matchRules: 'Agências de marketing, mídia, consultorias e empresas com processos repetitivos.',
     isEnabled: true
   },
   {
@@ -72,27 +72,27 @@ export function recommendEntryService(lead: {
 }): EntryService {
   const text = `${lead.bio || ''} ${lead.fullName || ''} ${lead.instagramHandle}`.toLowerCase();
 
-  // 1. Check for Website absence or request
-  const hasWebsiteSignal = /(http|https|\.com|\.br|linktr\.ee|beacons|site)/i.test(text);
-  if (!hasWebsiteSignal) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'website') || DEFAULT_ENTRY_SERVICES[0];
-  }
-
-  // 2. Clinics, Dentists, Aesthetics -> Chatbot 24/7
-  if (/(clinica|clínica|dra|dr|odontologia|odonto|estetica|estética|resina|facetas|harmonizacao|consultorio|consultório|medica)/i.test(text)) {
+  // 1. Clinics, Dentists, Aesthetics, Doctors -> Chatbot 24/7
+  if (/(clinica|clínica|dra|dr|odontologia|odonto|estetica|estética|resina|facetas|harmonizacao|consultorio|consultório|medica|médica|sorriso|dentista)/i.test(text)) {
     return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
   }
 
-  // 3. Agencies & B2B Consultants -> N8N or CRM Whitelabel
-  if (/(agencia|agência|consultoria|marketing|midia|mídia|b2b)/i.test(text)) {
-    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[3];
+  // 2. Agencies, Marketing, Media, B2B Consultants -> Automação N8N or CRM Whitelabel
+  if (/(agencia|agência|midia|mídia|marketing|consultoria|b2b|assessoria|digital)/i.test(text)) {
+    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[4];
   }
 
-  // 4. Stores, Services, Commerce -> Paid Traffic (R$ 1.300/mês)
-  if (/(loja|store|boutique|vendas|atendimento|produtos|entrega)/i.test(text)) {
+  // 3. Stores, E-commerce, Commerce, Products -> Gestão de Tráfego Pago (R$ 1.300/mês)
+  if (/(loja|store|boutique|vendas|produtos|entrega|fashion|moda|calcados|calçados|joias)/i.test(text)) {
     return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'paid_traffic') || DEFAULT_ENTRY_SERVICES[5];
   }
 
-  // Default Entry Offer fallback: Chatbot 24/7 or Paid Traffic
-  return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'paid_traffic') || DEFAULT_ENTRY_SERVICES[0];
+  // 4. Absence of website link -> Website com IA
+  const hasWebsiteSignal = /(http|https|\.com|\.br|linktr\.ee|beacons)/i.test(text);
+  if (!hasWebsiteSignal) {
+    return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'website') || DEFAULT_ENTRY_SERVICES[1];
+  }
+
+  // Default fallback: Chatbot 24/7
+  return DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
 }
