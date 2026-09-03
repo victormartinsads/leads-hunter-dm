@@ -19,7 +19,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'Chatbot de Atendimento Comercial 24/7',
     category: 'chatbot',
     priceLabel: 'Sob Medida / Mensalidade',
-    oneLineHook: 'Elimine a perda de clientes fora do horário comercial com um agente de IA no WhatsApp que qualifica e agende 24h.',
+    oneLineHook: 'Atendimento e agendamento automático no WhatsApp 24 horas por dia para não perder vendas fora do horário comercial.',
     matchRules: 'Clínicas, estéticas, consultórios, odontologia e empresas com alto volume de mensagens no Direct/WhatsApp.',
     isEnabled: true
   },
@@ -28,7 +28,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'Website de Alta Conversão com Agente de IA',
     category: 'website',
     priceLabel: 'Projeto Sob Medida',
-    oneLineHook: 'Criamos o site institucional moderno da sua empresa já com atendente virtual integrado para capturar leads 24h.',
+    oneLineHook: 'Página oficial da empresa na internet projetada para apresentar seus serviços e trazer clientes direto pro WhatsApp.',
     matchRules: 'Empresas e profissionais sem link de site na bio ou com páginas desatualizadas.',
     isEnabled: true
   },
@@ -37,7 +37,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'CRM Simples no seu Próprio Servidor',
     category: 'crm_simple',
     priceLabel: 'Instalação Única',
-    oneLineHook: 'Centralize seus leads e histórico de vendas em um CRM próprio e privado sem pagar mensalidades por usuário.',
+    oneLineHook: 'Painel simples e próprio para organizar contatos, orçamentos e vendas da equipe sem mensalidade por usuário.',
     matchRules: 'Empresas de serviços que ainda organizam vendas em planilhas ou conversas soltas.',
     isEnabled: true
   },
@@ -46,7 +46,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'CRM White Label Personalizado',
     category: 'crm_whitelabel',
     priceLabel: 'Licença Recorrente',
-    oneLineHook: 'Tenha seu próprio CRM comercial com a marca da sua agência para usar no time ou revender a clientes.',
+    oneLineHook: 'Sistema comercial completo com a marca da sua própria empresa para organizar o time ou usar com clientes.',
     matchRules: 'Agências, consultorias B2B e empresas que vendem soluções corporativas.',
     isEnabled: true
   },
@@ -55,7 +55,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'Automações de Processos com N8N',
     category: 'n8n',
     priceLabel: 'Fluxo por Demanda',
-    oneLineHook: 'Conecte seu WhatsApp, formulários, CRM e sistemas sem trabalho manual via fluxos automáticos no N8N.',
+    oneLineHook: 'Integrações automáticas que conectam formulários, atendimento e vendas sem ninguém precisar digitar nada manual.',
     matchRules: 'Agências de marketing, mídia, consultorias e empresas com processos repetitivos.',
     isEnabled: true
   },
@@ -64,7 +64,7 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
     name: 'Gestão de Tráfego Pago (Meta & Google Ads)',
     category: 'paid_traffic',
     priceLabel: 'R$ 1.300,00 / mês',
-    oneLineHook: 'Colocamos sua empresa na frente dos clientes certos diariamente no Instagram, Facebook e Google Ads.',
+    oneLineHook: 'Anúncios contínuos que colocam sua empresa na frente de novos clientes todos os dias no Instagram e Google.',
     matchRules: 'Negócios locais, clínicas, lojas e profissionais que precisam aumentar o volume diário de novos clientes.',
     isEnabled: true
   }
@@ -72,56 +72,56 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
 
 /**
  * 2nd DM Pitch Generator based on selected Entry Service
- * Tailored for commercial/business profiles (NEVER uses handle names)
+ * 100% Human, Natural, Business-Language (NO Technical Jargon / Tecnês)
  */
 export function buildStep2PitchDM(targetService?: string): { pitch: string; reasoning: string } {
   const service = (targetService || '').toLowerCase();
 
   if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
     return {
-      pitch: `Eu vi que vocês ainda não estão fazendo anúncios no Insta para captar leads diariamente. Faria sentido pra vocês ter um sistema de captação contínua de clientes no Meta e Google Ads por R$ 1.300/mês?`,
-      reasoning: `Oferta da Etapa 2 adaptada para Gestão de Tráfego Pago (Meta & Google Ads - R$ 1.300/mês).`
+      pitch: `Eu vi que vocês ainda não colocam anúncios aqui no Insta pra atrair novos clientes todo santo dia. Faria sentido pra vocês ter um sistema trazendo pessoas interessadas na sua empresa diariamente por R$ 1.300 por mês?`,
+      reasoning: `Pitch humano focado no benefício direto de atração diária de clientes (Tráfego Pago R$ 1.300/mês).`
     };
   }
 
   if (service.includes('chatbot') || service.includes('atendimento')) {
     return {
-      pitch: `Eu imagino que vocês tenham um fluxo bem grande de mensagens todos os dias, principalmente fora do horário comercial, né? Um atendimento com agente de IA no WhatsApp que qualifica e agenda 24h com certeza iria ajudar muito a aumentar a quantidade de agendamentos de vocês... Isso faria sentido pro seu negócio hoje?`,
-      reasoning: `Oferta da Etapa 2 adaptada para Chatbot de Atendimento Comercial 24/7 no WhatsApp.`
+      pitch: `Eu imagino que vocês tenham um fluxo bem grande de mensagens todos os dias, principalmente fora do horário comercial, né? Um atendimento no WhatsApp que qualifica e agenda 24h com certeza iria ajudar muito a aumentar a quantidade de agendamentos de vocês... Isso faria sentido pro seu negócio hoje?`,
+      reasoning: `Pitch humano focado na dor de perder vendas/agendamentos fora do horário de atendimento.`
     };
   }
 
   if (service.includes('website') || service.includes('site')) {
     return {
-      pitch: `Eu vi que vocês ainda não têm um site de alta conversão com atendente virtual integrado para capturar clientes 24h. Faria sentido pra vocês ter uma estrutura própria de vendas no site capturando clientes direto no WhatsApp?`,
-      reasoning: `Oferta da Etapa 2 adaptada para Website de Alta Conversão com Agente de IA.`
+      pitch: `Eu vi que vocês ainda não têm uma página oficial da empresa na internet pra apresentar os serviços e fechar vendas direto. Faria sentido ter um site moderno trazendo contatos novos direto pro WhatsApp de vocês?`,
+      reasoning: `Pitch humano focado no benefício de ter uma página comercial gerando contatos no WhatsApp.`
     };
   }
 
   if (service.includes('n8n') || service.includes('automaç')) {
     return {
-      pitch: `Eu imagino que vocês tenham muitos processos manuais para passar os leads e dados da equipe pro CRM ou WhatsApp. Ter um fluxo automático no N8N conectando tudo sem trabalho manual faria sentido pro seu negócio hoje?`,
-      reasoning: `Oferta da Etapa 2 adaptada para Automações de Processos no N8N.`
+      pitch: `Eu imagino que vocês percam um bom tempo organizando os contatos da equipe e anotando quem comprou ou não. Ter uma integração automática que passa tudo do atendimento pras vendas, sem ninguém precisar digitar nada manual, ajudaria vocês?`,
+      reasoning: `Pitch humano focado no benefício de eliminar retrabalho e digitação manual da equipe.`
     };
   }
 
   if (service.includes('white label') || service.includes('whitelabel')) {
     return {
-      pitch: `Eu imagino que vocês atendam muitos clientes e sintam falta de ter uma plataforma comercial própria. Ter um CRM White Label com a marca da sua empresa para gerenciar as vendas faria sentido pro seu negócio hoje?`,
-      reasoning: `Oferta da Etapa 2 adaptada para CRM White Label.`
+      pitch: `Eu imagino que vocês atendam muitos clientes e faria total diferença ter um sistema de vendas com a própria marca da sua empresa pra organizar a equipe. Isso faria sentido pra vocês hoje?`,
+      reasoning: `Pitch humano focado na valorização da marca própria e organização da equipe comercial.`
     };
   }
 
   if (service.includes('crm')) {
     return {
-      pitch: `Eu imagino que vocês recebam muitos contatos e acabe ficando difícil organizar todo o histórico de clientes e vendas. Ter um CRM simples e próprio instalado no servidor de vocês sem pagar mensalidades por usuário faria sentido pro seu negócio hoje?`,
-      reasoning: `Oferta da Etapa 2 adaptada para CRM Simples em Servidor Próprio.`
+      pitch: `Eu imagino que a rotina seja bem corrida e às vezes acabe ficando difícil acompanhar quais clientes responderam ou precisam de retorno, né? Faria sentido ter um painel simples da empresa pra organizar todas as conversas e vendas sem pagar mensalidades?`,
+      reasoning: `Pitch humano focado em não perder o histórico nem o retorno de clientes interessados.`
     };
   }
 
   return {
-    pitch: `Eu imagino que vocês tenham um volume alto de contatos e dúvidas todos os dias no Direct. Um atendimento comercial autônomo com IA que qualifica e atende 24h com certeza iria ajudar bastante. Isso faria sentido pro seu negócio hoje?`,
-    reasoning: `Oferta da Etapa 2 consultiva geral.`
+    pitch: `Eu imagino que vocês recebam um volume bom de mensagens todos os dias por aqui. Um atendimento automático que responde dúvidas e organiza os agendamentos da empresa 24 horas ajudaria a aumentar as vendas de vocês hoje?`,
+    reasoning: `Pitch humano comercial consultivo e direto para o empresário.`
   };
 }
 
@@ -145,7 +145,7 @@ export function recommendEntryService(lead: {
     const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[4];
     return {
       service: srv,
-      reason: `Perfil de Agência/Mídia/Consultoria B2B (${handle}). Necessidade crítica de integrar formulários, CRM e qualificação de clientes via automações N8N.`
+      reason: `Perfil de Agência/Mídia/Consultoria B2B (${handle}). Necessidade crítica de integrar formulários, CRM e qualificação de clientes via automações.`
     };
   }
 
