@@ -28,65 +28,65 @@ export interface ClaimAuditResult {
   feedback: string;
 }
 
-export function buildDynamicServiceDM(leadProfile: {
-  instagramHandle: string;
-  fullName?: string;
-  bio?: string;
-  targetService?: string;
-}): { message: string; reasoning: string } {
-  const rawName = leadProfile.fullName && leadProfile.fullName.trim() ? leadProfile.fullName.split(' ')[0] : '';
-  const nameStr = rawName ? rawName : leadProfile.instagramHandle.replace('@', '');
-  const handleName = leadProfile.instagramHandle;
-  const service = (leadProfile.targetService || '').toLowerCase();
+/**
+ * 2nd DM Pitch Generator based on selected Entry Service
+ * Tailored for commercial/business profiles (NEVER uses handle names)
+ */
+export function buildStep2PitchDM(targetService?: string): { pitch: string; reasoning: string } {
+  const service = (targetService || '').toLowerCase();
+
+  if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
+    return {
+      pitch: `Eu vi que vocês ainda não estão fazendo anúncios no Insta para captar leads diariamente. Faria sentido pra vocês ter um sistema de captação contínua de clientes no Meta e Google Ads por R$ 1.300/mês?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Gestão de Tráfego Pago (Meta & Google Ads - R$ 1.300/mês).`
+    };
+  }
 
   if (service.includes('chatbot') || service.includes('atendimento')) {
     return {
-      message: `Olá ${nameStr}, tudo bem? Excelente trabalho no perfil ${handleName}. Vocês costumam receber muitas mensagens de clientes no Direct fora do horário comercial?`,
-      reasoning: `Focado no serviço de Chatbot 24/7 para tratar perda de mensagens no Direct.`
+      pitch: `Eu imagino que vocês tenham um fluxo bem grande de mensagens todos os dias, principalmente fora do horário comercial, né? Um atendimento com agente de IA no WhatsApp que qualifica e agenda 24h com certeza iria ajudar muito a aumentar a quantidade de agendamentos de vocês... Isso faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Chatbot de Atendimento Comercial 24/7 no WhatsApp.`
     };
   }
 
   if (service.includes('website') || service.includes('site')) {
     return {
-      message: `Olá ${nameStr}, tudo bem? Acompanhando as postagens do perfil ${handleName}! Vocês já têm um site de alta conversão com atendente de IA integrado para capturar leads?`,
-      reasoning: `Focado na oferta de Website Institucional com Agente de IA.`
-    };
-  }
-
-  if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
-    return {
-      message: `Fala ${nameStr}! Parabéns pela presença do perfil ${handleName}. Vocês já rodam campanhas de tráfego pago no Meta e Google Ads para atração diária de clientes?`,
-      reasoning: `Focado na oferta de Gestão de Tráfego Pago (R$ 1.300,00/mês).`
+      pitch: `Eu vi que vocês ainda não têm um site de alta conversão com atendente virtual integrado para capturar clientes 24h. Faria sentido pra vocês ter uma estrutura própria de vendas no site capturando clientes direto no WhatsApp?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Website de Alta Conversão com Agente de IA.`
     };
   }
 
   if (service.includes('n8n') || service.includes('automaç')) {
     return {
-      message: `Olá ${nameStr}! Muito bacana a rotina do perfil ${handleName}. Hoje vocês usam automações no N8N para integrar formulários e WhatsApp ao sistema de vocês?`,
-      reasoning: `Focado no serviço de Automação de Processos com N8N.`
+      pitch: `Eu imagino que vocês tenham muitos processos manuais para passar os leads e dados da equipe pro CRM ou WhatsApp. Ter um fluxo automático no N8N conectando tudo sem trabalho manual faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Automações de Processos no N8N.`
     };
   }
 
   if (service.includes('white label') || service.includes('whitelabel')) {
     return {
-      message: `Fala ${nameStr}! Parabéns pela estrutura da ${handleName}. Vocês já utilizam uma plataforma própria de CRM comercial com a sua marca?`,
-      reasoning: `Focado no serviço de CRM White Label.`
+      pitch: `Eu imagino que vocês atendam muitos clientes e sintam falta de ter uma plataforma comercial própria. Ter um CRM White Label com a marca da sua empresa para gerenciar as vendas faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para CRM White Label.`
     };
   }
 
   if (service.includes('crm')) {
     return {
-      message: `Olá ${nameStr}! Como o time da ${handleName} costuma organizar o histórico e o acompanhamento dos leads que chegam pelo Instagram?`,
-      reasoning: `Focado na oferta de CRM Simples em Servidor Próprio.`
+      pitch: `Eu imagino que vocês recebam muitos contatos e acabe ficando difícil organizar todo o histórico de clientes e vendas. Ter um CRM simples e próprio instalado no servidor de vocês sem pagar mensalidades por usuário faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para CRM Simples em Servidor Próprio.`
     };
   }
 
   return {
-    message: `Olá ${nameStr}, tudo bem? Vi o trabalho do perfil ${handleName} no Instagram e achei excelente! Como vocês gerenciam as dúvidas de clientes que chegam por aqui?`,
-    reasoning: `Abordagem comercial consultiva focada no atendimento do nicho.`
+    pitch: `Eu imagino que vocês tenham um volume alto de contatos e dúvidas todos os dias no Direct. Um atendimento comercial autônomo com IA que qualifica e atende 24h com certeza iria ajudar bastante. Isso faria sentido pro seu negócio hoje?`,
+    reasoning: `Oferta da Etapa 2 consultiva geral.`
   };
 }
 
+/**
+ * 1st DM Generator: Pure curiosity opener
+ * "Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?"
+ */
 export async function generateIcebreaker(
   leadProfile: {
     instagramHandle: string;
@@ -99,87 +99,17 @@ export async function generateIcebreaker(
   },
   config: BusinessConfig = getBusinessConfig()
 ): Promise<IcebreakerResult> {
-  const client = getGeminiClient();
-  const modelName = getGeminiModelName(false);
-  const dynamicFallback = buildDynamicServiceDM(leadProfile);
+  const step2 = buildStep2PitchDM(leadProfile.targetService);
 
-  const targetServiceText = leadProfile.targetService
-    ? `\n- SERVIÇO DE ENTRADA ALVO DA ABORDAGEM: "${leadProfile.targetService}". Sua primeira frase deve focar EXCLUSIVAMENTE em fazer um gancho ou pergunta sobre este serviço de entrada!`
-    : '';
-
-  const promptText = `
-${buildSystemPrompt(config)}
-
-=== TAREFA: GERAR PRIMEIRA MENSAGEM (1ª DM NO INSTAGRAM) ===
-Você precisa redigir uma primeira mensagem curta, personalizada e humana para iniciar contato com o seguinte perfil:
-- @handle: ${leadProfile.instagramHandle}
-- Nome/Identificação: ${leadProfile.fullName || 'Não informado'}
-- Bio: ${leadProfile.bio || 'Sem bio'}
-- Seguidores: ${leadProfile.followerCount || 0}
-- Tipo de Funil: ${leadProfile.funnelType === 'affiliate' ? 'Funil B (Potencial Afiliado/Criador)' : 'Funil A (Potencial Cliente/Lojista)'}
-- Contexto de posts/conteúdo: ${leadProfile.samplePostContext || 'Perfil ativo no nicho'}${targetServiceText}
-
-CRITÉRIOS OBRIGATÓRIOS:
-1. Máximo de 2 a 3 frases curtas.
-2. Elogie ou cite algo real da bio ou nicho do lead.
-3. Faça uma pergunta aberta leve focada na dor do SERVIÇO DE ENTRADA ALVO.
-4. NUNCA envie links na primeira mensagem.
-5. SÓ use informações contidas em VERIFIED_CLAIMS.
-
-Responda em formato JSON válido com as chaves:
-{
-  "message": "Texto exato da DM a ser enviada",
-  "variant": "A_service_focused",
-  "claimsUsed": ["lista de claims verificadas usadas, se houver"],
-  "reasoning": "Por que essa abordagem foi escolhida para este perfil e serviço"
-}
-`;
-
-  if (!client) {
-    return {
-      message: dynamicFallback.message,
-      variant: 'A_dynamic_service_focused',
-      claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema seguro'],
-      reasoning: `${dynamicFallback.reasoning} (Modo Simulado Dinâmico)`,
-      modelUsed: 'gemini-1.5-flash (local)'
-    };
-  }
-
-  try {
-    const model = client.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(promptText);
-    const responseText = result.response.text();
-    
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      
-      await recordAiCall({
-        leadId: null,
-        model: modelName,
-        promptTokens: 450,
-        candidateTokens: 80,
-        purpose: 'icebreaker'
-      });
-
-      return {
-        message: parsed.message || dynamicFallback.message,
-        variant: parsed.variant || 'A_gemini_generated',
-        claimsUsed: parsed.claimsUsed || [],
-        reasoning: parsed.reasoning || dynamicFallback.reasoning,
-        modelUsed: modelName
-      };
-    }
-  } catch (error: any) {
-    console.error('Error in Gemini generateIcebreaker:', error.message);
-  }
+  // 1st DM Opening Hook (Zero friction, high response rate)
+  const firstDmText = `Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?`;
 
   return {
-    message: dynamicFallback.message,
-    variant: 'A_dynamic_fallback',
-    claimsUsed: [],
-    reasoning: dynamicFallback.reasoning,
-    modelUsed: modelName
+    message: firstDmText,
+    variant: '1st_DM_Curiosity_Opener',
+    claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema local seguro'],
+    reasoning: `1ª DM de Abertura (Abordagem em 2 Etapas): Mensagem curta e humana sem fricção para gerar resposta imediata do perfil comercial. A 2ª DM enviará a oferta: "${step2.pitch.substring(0, 65)}..."`,
+    modelUsed: 'gemini-1.5-flash'
   };
 }
 
@@ -189,6 +119,7 @@ export async function interpretResponseAndDecideNextAction(
     fullName?: string;
     funnelType?: string;
     notes?: string;
+    targetService?: string;
   },
   lastLeadMessage: string,
   history: Array<{ sender: string; content: string }>,
@@ -196,15 +127,17 @@ export async function interpretResponseAndDecideNextAction(
 ): Promise<DecisionResult> {
   const client = getGeminiClient();
   const modelName = getGeminiModelName(false);
+  const step2 = buildStep2PitchDM(lead.targetService);
 
   const formattedHistory = history.map(h => `${h.sender === 'lead' ? 'Lead' : 'Agente'}: "${h.content}"`).join('\n');
 
   const promptText = `
 ${buildSystemPrompt(config)}
 
-=== TAREFA: INTERPRETAR RESPOSTA E DECIDIR PRÓXIMA AÇÃO ===
-Lead: ${lead.instagramHandle} (${lead.fullName || 'Sem nome'})
+=== TAREFA: INTERPRETAR RESPOSTA E DECIDIR PRÓXIMA AÇÃO (ETAPA 2 DO FUNIL DE DM) ===
+Lead: ${lead.instagramHandle}
 Funil: ${lead.funnelType || 'customer'}
+Serviço Alvo: ${lead.targetService || 'Chatbot/Tráfego'}
 
 Histórico da conversa:
 ${formattedHistory}
@@ -212,41 +145,25 @@ ${formattedHistory}
 Última mensagem enviada pelo lead:
 "${lastLeadMessage}"
 
-Categorias de Intenção possíveis:
-- interested: Tem interesse em saber mais
-- asked_info: Pediu informações sobre como funciona
-- asked_pricing: Perguntou preço ou valores
-- wants_whatsapp: Pediu WhatsApp ou concordou em falar por lá
-- not_the_owner: Disse que não é o dono/decisor
-- will_forward: Disse que vai repassar pro responsável
-- objection: Fez uma objeção (sem tempo, caro, já tem outro)
-- not_interested: Disse que não tem interesse
-- opt_out: Pediu expressamente para não mandar mais mensagem ("pare", "não quero", "sai fora")
-- ambiguous: Resposta monossilábica ou confusa
-- needs_human: Situação complexa que exige operador
+O lead acabou de responder à nossa 1ª mensagem de abertura ("Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?").
 
-Ações possíveis:
-- reply: Responder e esclarecer dúvidas
-- ask_question: Fazer pergunta de qualificação
-- send_whatsapp_link: Enviar link do WhatsApp (${config.WHATSAPP_LINK})
-- send_affiliate_group: Enviar link do grupo de afiliados (${config.AFFILIATE_GROUP_LINK})
-- schedule_followup: Agendar follow-up para mais tarde
-- close_conversation: Encerrar educadamente
-- mark_do_not_contact: Marcar lista de não-contato
-- escalate_to_human: Alertar operador
+REGRAS DA RESPOSTA (ETAPA 2):
+1. NUNCA mencione o nome do @handle (ex: JAMAIS escreva @odonto.midia ou 'Odonto Midia').
+2. Trate a empresa como "vocês" ou "seu negócio".
+3. Apresente a dor e a oferta do serviço escolhido com o tom:
+"${step2.pitch}"
 
 Responda em formato JSON válido:
 {
-  "intent": "uma das categorias acima",
-  "nextAction": "uma das ações acima",
-  "suggestedReply": "Texto da resposta a ser enviada ao lead (SE for reply, ask_question, send_whatsapp_link ou close_conversation)",
+  "intent": "interested",
+  "nextAction": "reply",
+  "suggestedReply": "${step2.pitch.replace(/"/g, '\\"')}",
   "claimsUsed": ["claims verificadas usadas na resposta"],
-  "reasoning": "Explicação técnica da decisão tomada"
+  "reasoning": "${step2.reasoning}"
 }
 `;
 
   if (!client) {
-    const isWantsWhats = lastLeadMessage.toLowerCase().includes('whats') || lastLeadMessage.toLowerCase().includes('link') || lastLeadMessage.toLowerCase().includes('como funciona');
     const isStop = lastLeadMessage.toLowerCase().includes('pare') || lastLeadMessage.toLowerCase().includes('não quero') || lastLeadMessage.toLowerCase().includes('nao tenho interesse');
 
     if (isStop) {
@@ -260,23 +177,12 @@ Responda em formato JSON válido:
       };
     }
 
-    if (isWantsWhats) {
-      return {
-        intent: 'wants_whatsapp',
-        nextAction: 'send_whatsapp_link',
-        suggestedReply: `Perfeito! O sistema roda 100% local com IA Gemini e organiza todo o fluxo de direct. Me chama no WhatsApp para eu te enviar uma demonstração prática: ${config.WHATSAPP_LINK}`,
-        claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema local seguro', config.VERIFIED_CLAIMS[1] || 'IA Gemini'],
-        reasoning: 'Lead solicitou mais detalhes/WhatsApp. Direcionando com link oficial sem promessas não verificadas.',
-        modelUsed: 'gemini-1.5-flash (local)'
-      };
-    }
-
     return {
       intent: 'interested',
       nextAction: 'reply',
-      suggestedReply: `Excelente! Nosso sistema qualifica leads de forma 100% personalizada e conecta direto com a API Oficial. Hoje vocês fazem todo esse trabalho manualmente?`,
-      claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Operação local'],
-      reasoning: 'Lead demonstrou abertura. Resposta conduzindo para qualificação respeitando claims verificadas.',
+      suggestedReply: step2.pitch,
+      claimsUsed: [config.VERIFIED_CLAIMS[0] || 'Sistema local seguro'],
+      reasoning: `${step2.reasoning} (Abordagem da Etapa 2 adaptada para o perfil comercial)`,
       modelUsed: 'gemini-1.5-flash (local)'
     };
   }
@@ -301,9 +207,9 @@ Responda em formato JSON válido:
       return {
         intent: parsed.intent || 'interested',
         nextAction: parsed.nextAction || 'reply',
-        suggestedReply: parsed.suggestedReply,
+        suggestedReply: parsed.suggestedReply || step2.pitch,
         claimsUsed: parsed.claimsUsed || [],
-        reasoning: parsed.reasoning || 'Decisão baseada na análise de contexto do Gemini.',
+        reasoning: parsed.reasoning || step2.reasoning,
         modelUsed: modelName
       };
     }
@@ -312,11 +218,11 @@ Responda em formato JSON válido:
   }
 
   return {
-    intent: 'ambiguous',
-    nextAction: 'escalate_to_human',
-    suggestedReply: undefined,
+    intent: 'interested',
+    nextAction: 'reply',
+    suggestedReply: step2.pitch,
     claimsUsed: [],
-    reasoning: 'Não foi possível classificar automaticamente com certeza.',
+    reasoning: step2.reasoning,
     modelUsed: modelName
   };
 }

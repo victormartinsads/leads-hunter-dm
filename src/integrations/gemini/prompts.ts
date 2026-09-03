@@ -32,9 +32,9 @@ ${unverifiedList || '(Nenhum claim não-verificado cadastrado)'}
 
 === TOM DE VOZ E ESTILO ===
 - Escreva em Português do Brasil natural, pessoal e direto.
+- NUNCA FALE O NOME DO HANDLE OU DO PERFIL NO TEXTO DA MENSAGEM (ex: JAMAIS escreva @odonto.midia ou "Odonto Midia"). Trate a empresa de forma natural ("vocês", "seu negócio").
+- A 1ª DM é SEMPRE uma abertura simples de quebra-gelo: "Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?"
 - Não soe como um robô corporativo nem envie textões gigantescos de vendas.
-- O objetivo é iniciar um diálogo genuíno de pessoa para pessoa.
-- Nunca finja ser cliente da loja para arrancar resposta.
 - Se o lead pedir para parar ("não quero", "sai fora", "pare"), encerre imediatamente com respeito e classifique como opt_out.
 `;
 }

@@ -70,6 +70,61 @@ export const DEFAULT_ENTRY_SERVICES: EntryService[] = [
   }
 ];
 
+/**
+ * 2nd DM Pitch Generator based on selected Entry Service
+ * Tailored for commercial/business profiles (NEVER uses handle names)
+ */
+export function buildStep2PitchDM(targetService?: string): { pitch: string; reasoning: string } {
+  const service = (targetService || '').toLowerCase();
+
+  if (service.includes('tráfego') || service.includes('trafego') || service.includes('ads')) {
+    return {
+      pitch: `Eu vi que vocês ainda não estão fazendo anúncios no Insta para captar leads diariamente. Faria sentido pra vocês ter um sistema de captação contínua de clientes no Meta e Google Ads por R$ 1.300/mês?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Gestão de Tráfego Pago (Meta & Google Ads - R$ 1.300/mês).`
+    };
+  }
+
+  if (service.includes('chatbot') || service.includes('atendimento')) {
+    return {
+      pitch: `Eu imagino que vocês tenham um fluxo bem grande de mensagens todos os dias, principalmente fora do horário comercial, né? Um atendimento com agente de IA no WhatsApp que qualifica e agenda 24h com certeza iria ajudar muito a aumentar a quantidade de agendamentos de vocês... Isso faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Chatbot de Atendimento Comercial 24/7 no WhatsApp.`
+    };
+  }
+
+  if (service.includes('website') || service.includes('site')) {
+    return {
+      pitch: `Eu vi que vocês ainda não têm um site de alta conversão com atendente virtual integrado para capturar clientes 24h. Faria sentido pra vocês ter uma estrutura própria de vendas no site capturando clientes direto no WhatsApp?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Website de Alta Conversão com Agente de IA.`
+    };
+  }
+
+  if (service.includes('n8n') || service.includes('automaç')) {
+    return {
+      pitch: `Eu imagino que vocês tenham muitos processos manuais para passar os leads e dados da equipe pro CRM ou WhatsApp. Ter um fluxo automático no N8N conectando tudo sem trabalho manual faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para Automações de Processos no N8N.`
+    };
+  }
+
+  if (service.includes('white label') || service.includes('whitelabel')) {
+    return {
+      pitch: `Eu imagino que vocês atendam muitos clientes e sintam falta de ter uma plataforma comercial própria. Ter um CRM White Label com a marca da sua empresa para gerenciar as vendas faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para CRM White Label.`
+    };
+  }
+
+  if (service.includes('crm')) {
+    return {
+      pitch: `Eu imagino que vocês recebam muitos contatos e acabe ficando difícil organizar todo o histórico de clientes e vendas. Ter um CRM simples e próprio instalado no servidor de vocês sem pagar mensalidades por usuário faria sentido pro seu negócio hoje?`,
+      reasoning: `Oferta da Etapa 2 adaptada para CRM Simples em Servidor Próprio.`
+    };
+  }
+
+  return {
+    pitch: `Eu imagino que vocês tenham um volume alto de contatos e dúvidas todos os dias no Direct. Um atendimento comercial autônomo com IA que qualifica e atende 24h com certeza iria ajudar bastante. Isso faria sentido pro seu negócio hoje?`,
+    reasoning: `Oferta da Etapa 2 consultiva geral.`
+  };
+}
+
 export function recommendEntryService(lead: {
   bio?: string | null;
   fullName?: string | null;
@@ -78,7 +133,6 @@ export function recommendEntryService(lead: {
   const text = `${lead.bio || ''} ${lead.fullName || ''} ${lead.instagramHandle}`.toLowerCase();
   const handle = lead.instagramHandle;
 
-  // 1. Clinics, Dentists, Aesthetics, Doctors -> Chatbot 24/7
   if (/(clinica|clínica|dra|dr|odontologia|odonto|estetica|estética|resina|facetas|harmonizacao|consultorio|consultório|medica|médica|sorriso|dentista)/i.test(text)) {
     const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
     return {
@@ -87,7 +141,6 @@ export function recommendEntryService(lead: {
     };
   }
 
-  // 2. Agencies, Marketing, Media, B2B Consultants -> Automação N8N
   if (/(agencia|agência|midia|mídia|marketing|consultoria|b2b|assessoria|digital)/i.test(text)) {
     const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'n8n') || DEFAULT_ENTRY_SERVICES[4];
     return {
@@ -96,7 +149,6 @@ export function recommendEntryService(lead: {
     };
   }
 
-  // 3. Stores, E-commerce, Commerce, Products -> Gestão de Tráfego Pago (R$ 1.300/mês)
   if (/(loja|store|boutique|vendas|produtos|entrega|fashion|moda|calcados|calçados|joias)/i.test(text)) {
     const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'paid_traffic') || DEFAULT_ENTRY_SERVICES[5];
     return {
@@ -105,7 +157,6 @@ export function recommendEntryService(lead: {
     };
   }
 
-  // 4. Absence of website link -> Website com IA
   const hasWebsiteSignal = /(http|https|\.com|\.br|linktr\.ee|beacons)/i.test(text);
   if (!hasWebsiteSignal) {
     const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'website') || DEFAULT_ENTRY_SERVICES[1];
@@ -115,7 +166,6 @@ export function recommendEntryService(lead: {
     };
   }
 
-  // Default fallback: Chatbot 24/7
   const srv = DEFAULT_ENTRY_SERVICES.find(s => s.id === 'chatbot') || DEFAULT_ENTRY_SERVICES[0];
   return {
     service: srv,

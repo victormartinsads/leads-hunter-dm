@@ -29,7 +29,7 @@ import { ChromeIcon, InstagramIcon } from '@/components/Icons';
 import { Lead } from '@/db/schema';
 import { getPipelineStatusLabel, formatDateBR } from '@/lib/utils';
 import { evaluateLeadQualification } from '@/lib/qualification';
-import { recommendEntryService, DEFAULT_ENTRY_SERVICES, EntryService } from '@/lib/entry-services';
+import { recommendEntryService, DEFAULT_ENTRY_SERVICES, EntryService, buildStep2PitchDM } from '@/lib/entry-services';
 
 export default function GuidedReviewPage() {
   const router = useRouter();
@@ -570,9 +570,28 @@ export default function GuidedReviewPage() {
               />
             ) : (
               <div className="bg-[#18181b] border border-amber-500/30 rounded-xl p-4 space-y-3">
-                <p className="text-sm font-medium text-zinc-100 leading-relaxed">
+                <p className="text-sm font-medium text-zinc-100 leading-relaxed font-sans">
                   "{generatedMessage}"
                 </p>
+
+                {/* Step 2 Pitch Preview */}
+                {(() => {
+                  const recResult = recommendEntryService(currentLead);
+                  const activeService = selectedServiceMap[currentLead.id] || recResult.service.name;
+                  const step2 = buildStep2PitchDM(activeService);
+
+                  return (
+                    <div className="bg-zinc-950/80 border border-zinc-800 p-3 rounded-lg text-xs space-y-1 font-sans">
+                      <div className="flex items-center space-x-1.5 text-[11px] font-bold text-amber-400">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Prévia da 2ª DM (Oferta enviada após o lead responder "Pode sim"):</span>
+                      </div>
+                      <p className="text-zinc-300 italic text-[11px]">
+                        "{step2.pitch}"
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {reasoning && (
                   <div className="text-[11px] text-zinc-400 pt-2 border-t border-zinc-800/80">
