@@ -22,12 +22,14 @@ import {
   ShieldAlert,
   Sliders,
   Layers,
-  Award
+  Award,
+  Target
 } from 'lucide-react';
 import { ChromeIcon, InstagramIcon } from '@/components/Icons';
 import { Lead } from '@/db/schema';
 import { getPipelineStatusLabel, formatDateBR } from '@/lib/utils';
 import { evaluateLeadQualification } from '@/lib/qualification';
+import { recommendEntryService, DEFAULT_ENTRY_SERVICES, EntryService } from '@/lib/entry-services';
 
 export default function GuidedReviewPage() {
   const router = useRouter();
@@ -38,6 +40,9 @@ export default function GuidedReviewPage() {
   const [loading, setLoading] = useState(true);
   const [businessConfig, setBusinessConfig] = useState<any>({});
   
+  // Selected Entry Service per lead
+  const [selectedServiceMap, setSelectedServiceMap] = useState<Record<string, string>>({});
+
   // Follower edit state
   const [editingFollowers, setEditingFollowers] = useState(false);
   const [newFollowerCount, setNewFollowerCount] = useState<number>(0);
@@ -91,13 +96,16 @@ export default function GuidedReviewPage() {
   const currentBatchLeads = allPendingLeads.slice(batchStart, batchStart + batchSize);
   const currentLead = currentBatchLeads[leadInBatchIndex];
 
-  const generateMessageForLead = async (lead: Lead) => {
+  const generateMessageForLead = async (lead: Lead, customService?: string) => {
     if (!lead) return;
     setGeneratingAi(true);
     setSendResult(null);
     setIsEditingText(false);
     setEditingFollowers(false);
     setNewFollowerCount(lead.followerCount || 0);
+
+    const activeService = customService || selectedServiceMap[lead.id] || recommendEntryService(lead).name;
+
     try {
       const res = await fetch('/api/ai/simulate', {
         method: 'POST',
@@ -108,7 +116,8 @@ export default function GuidedReviewPage() {
           fullName: lead.fullName,
           bio: lead.bio,
           followerCount: lead.followerCount,
-          funnelType: lead.funnelType
+          funnelType: lead.funnelType,
+          targetService: activeService
         })
       });
       if (res.ok) {
@@ -423,6 +432,44 @@ export default function GuidedReviewPage() {
             </div>
           </div>
 
+          {/* Diagnostic Entry Offer Service Card */}
+          {(() => {
+            const recommended = recommendEntryService(currentLead);
+            const activeService = selectedServiceMap[currentLead.id] || recommended.name;
+            const matchedObj = DEFAULT_ENTRY_SERVICES.find(s => s.name === activeService) || recommended;
+
+            return (
+              <div className="bg-gradient-to-r from-amber-950/20 via-[#18181b] to-[#18181b] border border-amber-500/30 rounded-xl p-4 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-black text-amber-400 uppercase tracking-wider">Serviço de Entrada Recomendado:</span>
+                  </div>
+
+                  <select
+                    value={activeService}
+                    onChange={(e) => {
+                      const newService = e.target.value;
+                      setSelectedServiceMap(prev => ({ ...prev, [currentLead.id]: newService }));
+                      generateMessageForLead(currentLead, newService);
+                    }}
+                    className="bg-zinc-950 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 cursor-pointer"
+                  >
+                    {DEFAULT_ENTRY_SERVICES.map(srv => (
+                      <option key={srv.id} value={srv.name} className="bg-zinc-950 text-white">
+                        {srv.name} ({srv.priceLabel})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <p className="text-[11px] text-zinc-300 leading-relaxed">
+                  💡 <strong className="text-amber-300">Diagnóstico da Oferta:</strong> {matchedObj.oneLineHook}
+                </p>
+              </div>
+            );
+          })()}
+
           {/* Bio & Signals */}
           <div className="space-y-1.5">
             <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Bio Pública Capturada:</span>
@@ -586,7 +633,7 @@ export default function GuidedReviewPage() {
                 ) : (
                   <>
                     <ChromeIcon className="w-4 h-4 text-zinc-950" />
-                    <span>Aprovar & Enviar DM no Chrome Real</span>
+                    <span>Aprovar e Enviar DM no Chrome Real</span>
                   </>
                 )}
               </button>

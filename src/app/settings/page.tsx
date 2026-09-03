@@ -501,6 +501,34 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Agency Entry Services Portfolio Card */}
+        <div className="bg-[#121215] border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center space-x-2 pb-3 border-b border-zinc-800">
+            <Target className="w-5 h-5 text-amber-400" />
+            <div>
+              <h2 className="text-sm font-bold text-white">💼 Portfólio de Serviços de Entrada da Agência</h2>
+              <p className="text-[11px] text-zinc-400">Serviços e ofertas de entrada utilizados pela IA no diagnóstico e gancho da 1ª abordagem.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(config.SERVICES_PORTFOLIO || []).map((srv, idx) => (
+              <div key={srv.id} className="bg-zinc-950 border border-zinc-800/80 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-400">{srv.name}</span>
+                  <span className="text-[10px] font-mono font-bold bg-amber-400/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded">
+                    {srv.priceLabel}
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-300 leading-relaxed font-sans">{srv.oneLineHook}</p>
+                <div className="text-[10px] text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded font-mono">
+                  🎯 ICP Alvo: {srv.matchRules}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Links & WhatsApp Card */}
         <div className="bg-[#131b2e] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center space-x-2 pb-3 border-b border-slate-800">

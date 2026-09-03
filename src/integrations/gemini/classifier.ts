@@ -36,11 +36,16 @@ export async function generateIcebreaker(
     followerCount?: number;
     funnelType?: string;
     samplePostContext?: string;
+    targetService?: string;
   },
   config: BusinessConfig = getBusinessConfig()
 ): Promise<IcebreakerResult> {
   const client = getGeminiClient();
   const modelName = getGeminiModelName(false);
+
+  const targetServiceText = leadProfile.targetService
+    ? `\n- SERVIÇO DE ENTRADA ALVO DA ABORDAGEM: "${leadProfile.targetService}". Foque a pergunta/gancho inicial sutilmente na dor resolvida por este serviço.`
+    : '';
 
   const promptText = `
 ${buildSystemPrompt(config)}
@@ -52,7 +57,7 @@ Você precisa redigir uma primeira mensagem curta, personalizada e humana para i
 - Bio: ${leadProfile.bio || 'Sem bio'}
 - Seguidores: ${leadProfile.followerCount || 0}
 - Tipo de Funil: ${leadProfile.funnelType === 'affiliate' ? 'Funil B (Potencial Afiliado/Criador)' : 'Funil A (Potencial Cliente/Lojista)'}
-- Contexto de posts/conteúdo: ${leadProfile.samplePostContext || 'Perfil ativo no nicho'}
+- Contexto de posts/conteúdo: ${leadProfile.samplePostContext || 'Perfil ativo no nicho'}${targetServiceText}
 
 CRITÉRIOS OBRIGATÓRIOS:
 1. Máximo de 2 a 3 frases curtas.

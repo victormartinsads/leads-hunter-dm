@@ -8,14 +8,15 @@ export async function POST(req: NextRequest) {
     const config = getBusinessConfig();
 
     if (body.action === 'icebreaker') {
-      const { instagramHandle, fullName, bio, followerCount, funnelType, samplePostContext } = body;
+      const { instagramHandle, fullName, bio, followerCount, funnelType, samplePostContext, targetService } = body;
       const result = await generateIcebreaker({
         instagramHandle: instagramHandle || '@perfil_exemplo',
         fullName,
         bio,
         followerCount: Number(followerCount) || 5000,
         funnelType: funnelType || 'customer',
-        samplePostContext
+        samplePostContext,
+        targetService
       }, config);
 
       return NextResponse.json({ success: true, result });

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { EntryService, DEFAULT_ENTRY_SERVICES } from './entry-services';
 
 export interface BusinessConfig {
   OWNER_NAME: string;
@@ -32,6 +33,7 @@ export interface BusinessConfig {
   REQUIRE_BUSINESS_ACCOUNT?: boolean;
   EXCLUDE_VERIFIED_ACCOUNTS?: boolean;
   EXCLUDE_KEYWORDS?: string[];
+  SERVICES_PORTFOLIO?: EntryService[];
 }
 
 const configPath = path.join(process.cwd(), 'config', 'business.json');
@@ -91,7 +93,8 @@ export function getBusinessConfig(): BusinessConfig {
     MIN_ICP_SCORE: 70,
     REQUIRE_BUSINESS_ACCOUNT: true,
     EXCLUDE_VERIFIED_ACCOUNTS: true,
-    EXCLUDE_KEYWORDS: ["apostas", "cassino", "tigrinho", "politica", "memes", "futebol"]
+    EXCLUDE_KEYWORDS: ["apostas", "cassino", "tigrinho", "politica", "memes", "futebol"],
+    SERVICES_PORTFOLIO: DEFAULT_ENTRY_SERVICES
   };
 }
 
