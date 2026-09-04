@@ -20,7 +20,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isPaused, setIsPaused] = useState(false);
   const [chromeStatus, setChromeStatus] = useState<'online' | 'offline_simulated'>('offline_simulated');
-  const [geminiStatus, setGeminiStatus] = useState<boolean>(true);
   const [loadingToggle, setLoadingToggle] = useState(false);
   const [launchingChrome, setLaunchingChrome] = useState(false);
   const [chromeMsg, setChromeMsg] = useState<string | null>(null);
@@ -38,7 +37,6 @@ export default function Navbar() {
         const data = await res.json();
         setIsPaused(data.system?.paused ?? false);
         setChromeStatus(data.system?.chromeStatus || 'offline_simulated');
-        setGeminiStatus(data.system?.geminiConfigured ?? false);
       }
     } catch (e) {
       console.error(e);
@@ -48,14 +46,13 @@ export default function Navbar() {
   const togglePause = async () => {
     setLoadingToggle(true);
     try {
-      const res = await fetch('/api/worker', {
+      const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle_pause' })
+        body: JSON.stringify({ SYSTEM_PAUSED: !isPaused })
       });
       if (res.ok) {
-        const data = await res.json();
-        setIsPaused(data.paused);
+        setIsPaused(!isPaused);
       }
     } catch (e) {
       console.error(e);
@@ -89,7 +86,7 @@ export default function Navbar() {
     { href: '/leads/review', label: 'Modo A (Aprovação 1 a 1)', icon: Sparkles },
     { href: '/leads', label: 'Leads Abordados', icon: Users },
     { href: '/claims', label: 'Claims & Regras', icon: ShieldCheck },
-    { href: '/simulator', label: 'Simulador Gemini', icon: Sparkles },
+    { href: '/simulator', label: 'Simulador IA', icon: Sparkles },
     { href: '/settings', label: 'Configurações & ICP', icon: Settings },
   ];
 
@@ -107,10 +104,10 @@ export default function Navbar() {
                 </div>
                 <div className="flex flex-col justify-center">
                   <span className="font-black text-sm tracking-tight text-white group-hover:text-amber-300 transition-colors leading-none">
-                    Buscando 1 Milhão
+                    Mart Digital
                   </span>
                   <span className="text-[10px] font-bold tracking-widest text-amber-400/90 uppercase font-mono mt-1 leading-none">
-                    AGENTE COMERCIAL • GEMINI
+                    AGENTE COMERCIAL AUTÔNOMO
                   </span>
                 </div>
               </Link>
@@ -141,11 +138,11 @@ export default function Navbar() {
             {/* Status Badges & Action Toolbar */}
             <div className="flex items-center space-x-2 shrink-0">
               
-              {/* Gemini Badge */}
+              {/* OpenAI Model Badge */}
               <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <Cpu className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Gemini 3.6 Flash</span>
+                <span>OpenAI gpt-4o-mini</span>
               </div>
 
               {/* Chrome Launch / Status Button */}
@@ -173,14 +170,14 @@ export default function Navbar() {
                 disabled={loadingToggle}
                 className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm ${
                   isPaused
-                    ? 'bg-amber-400 hover:bg-amber-300 text-zinc-950 shadow-amber-500/10'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50'
                     : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700'
                 }`}
                 title={isPaused ? 'Clique para retomar a operação' : 'Clique para pausar imediatamente todas as abordagens'}
               >
                 {isPaused ? (
                   <>
-                    <Play className="w-3.5 h-3.5 fill-current text-zinc-950" />
+                    <Play className="w-3.5 h-3.5 fill-current text-rose-400" />
                     <span>Retomar</span>
                   </>
                 ) : (

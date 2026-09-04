@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auditClaimCompliance } from '@/integrations/gemini/classifier';
+import { auditClaimCompliance } from '@/integrations/openai/classifier';
 import { getBusinessConfig } from '@/lib/business-config';
 
 export async function POST(req: NextRequest) {

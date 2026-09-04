@@ -26,7 +26,6 @@ export interface BusinessConfig {
   OPERATING_HOURS: string;
   OPERATING_TIMEZONE: string;
   SYSTEM_PAUSED: boolean;
-  // ICP Qualification Criteria
   MIN_FOLLOWERS?: number;
   MAX_FOLLOWERS?: number;
   MIN_ICP_SCORE?: number;
@@ -54,45 +53,61 @@ export function getBusinessConfig(): BusinessConfig {
     console.error('Error reading business.json:', error);
   }
 
-  // Fallback defaults
+  // Fallback defaults for Mart Digital
   return {
-    OWNER_NAME: "Matheus Gomes",
-    OWNER_ROLE: "Fundador",
-    COMPANY_NAME: "Buscando 1 Milhão",
-    COMPANY_WEBSITE: "https://buscandomilhao.com.br",
-    INSTAGRAM_HANDLE: "@soumatheusgomes",
-    WHATSAPP_LINK: "https://wa.me/5511999999999",
-    AFFILIATE_GROUP_LINK: "https://chat.whatsapp.com/ExemploGrupoAfiliados",
-    ONE_LINE_PITCH: "Automação comercial autônoma no Instagram para gerar vendas e parceiros qualificados sem queimar a conta.",
-    HOW_IT_WORKS: "1. Identifica perfis qualificados do ICP | 2. Inicia conversa natural pelo seu Chrome real | 3. Conduz até o fechamento no WhatsApp via API Oficial e IA Gemini",
-    REVENUE_MODEL: "Assinatura mensal de software + comissão por resultado gerado",
-    MARKET_JARGON: "SDR = Representante de Vendas | ICP = Perfil de Cliente Ideal",
+    OWNER_NAME: "Victor de Barros Martisn",
+    OWNER_ROLE: "Especialista em Automações e IA",
+    COMPANY_NAME: "Mart Digital",
+    COMPANY_WEBSITE: "Não tem",
+    INSTAGRAM_HANDLE: "@victormartins.io",
+    WHATSAPP_LINK: "https://wa.me/55.21+971748472",
+    AFFILIATE_GROUP_LINK: "não tenho",
+    ONE_LINE_PITCH: "Eu implemento sistemas de atendimento e vendas com IA (WhatsApp + CRM) que fazem pequenas empresas venderem mais sem precisar contratar mais gente.",
+    HOW_IT_WORKS: "Diagnóstico rápido do atendimento e funil atual da empresa | Implementação do sistema (CRM + agente de IA no WhatsApp + automações conectadas) | Empresa paga a implementação uma vez e uma mensalidade baixa de manutenção e suporte",
+    REVENUE_MODEL: "Cobro um valor fechado pela implementação do sistema + uma mensalidade recorrente baixa pela manutenção, suporte e ajustes contínuos.",
+    MARKET_JARGON: "Ticket médio = quanto cada cliente gasta em média por pedido/visita — métrica que todo dono de restaurante/estabelecimento de alimentação acompanha de perto",
     VERIFIED_CLAIMS: [
-      "Sistema opera 100% local no seu computador sem enviar suas senhas a terceiros.",
-      "Utiliza inteligência artificial Google Gemini para geração de mensagens personalizadas.",
-      "A primeira mensagem sai pelo navegador real (Chrome) com intervalo humano programado.",
-      "Respostas subsequentes são gerenciadas via API Oficial da Meta.",
-      "Possui trava de canal que impede envios duplicados entre navegador e API."
+      "Anos de experiência com tráfego pago (Meta Ads e Google Ads) e tecnologia aplicada a negócios",
+      "O sistema de CRM + agente de IA no WhatsApp já está pronto e disponível pra implementação agora",
+      "Quem desenvolve o sistema é o próprio time técnico, não é revenda de ferramenta de terceiro",
+      "Modelo de implementação + manutenção mensal, sem contrato longo obrigatório"
     ],
     UNVERIFIED_CLAIMS: [
-      "Garantia de 100 clientes novos no primeiro mês.",
-      "Taxa de resposta de 95% em qualquer nicho de mercado."
+      "Qualquer percentual de aumento de vendas (\"aumenta X% suas vendas\")",
+      "Número de empresas/clientes atendidos",
+      "Cases ou depoimentos específicos de clientes",
+      "Prazo garantido de retorno do investimento",
+      "Comparação direta com concorrentes (\"melhor que X\")",
+      "Qualquer menção a ser \"líder\" ou \"mais usado\" no nicho"
     ],
-    ICP_SEGMENTS: ["E-commerce", "Infoprodutores", "Clínicas"],
-    ICP_KEYWORDS: ["loja virtual", "marketing", "estética"],
-    AFFILIATE_TOPICS: ["vendas", "afiliados"],
-    GEOGRAPHY: "Brasil",
+    ICP_SEGMENTS: ["Clinica odontologica", "Clinica Médica", "Clinica de estética"],
+    ICP_KEYWORDS: [
+      "clínica odontológica",
+      "consultório odontológico",
+      "odontologia estética",
+      "dentista",
+      "clínica médica",
+      "centro médico",
+      "policlínica",
+      "consultório particular",
+      "clínica de estética avançada",
+      "centro estético",
+      "estética facial e corporal",
+      "harmonização facial"
+    ],
+    AFFILIATE_TOPICS: ["automação de vendas", "tecnologia para clínicas"],
+    GEOGRAPHY: "TODO BRASIL",
     MAX_DMS_PER_DAY: 30,
     MIN_SECONDS_BETWEEN_DMS: 90,
     MAX_SECONDS_BETWEEN_DMS: 240,
     OPERATING_HOURS: "09:00-20:00",
     OPERATING_TIMEZONE: "America/Sao_Paulo",
     SYSTEM_PAUSED: false,
-    MIN_FOLLOWERS: 1000,
-    MAX_FOLLOWERS: 200000,
-    MIN_ICP_SCORE: 70,
+    MIN_FOLLOWERS: 500,
+    MAX_FOLLOWERS: 300000,
+    MIN_ICP_SCORE: 60,
     REQUIRE_BUSINESS_ACCOUNT: true,
-    EXCLUDE_VERIFIED_ACCOUNTS: true,
+    EXCLUDE_VERIFIED_ACCOUNTS: false,
     EXCLUDE_KEYWORDS: ["apostas", "cassino", "tigrinho", "politica", "memes", "futebol"],
     SERVICES_PORTFOLIO: DEFAULT_ENTRY_SERVICES
   };

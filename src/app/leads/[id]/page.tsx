@@ -72,7 +72,7 @@ export default function LeadDetailPage() {
           newMessage: {
             content: contentToSend.trim(),
             sender,
-            channel: lead?.channelState.includes('api') ? 'meta_api' : 'browser'
+            channel: lead?.channelState?.includes('api') ? 'meta_api' : 'browser'
           }
         })
       });
@@ -322,11 +322,11 @@ export default function LeadDetailPage() {
                     className={`flex flex-col ${isAgent ? 'items-end' : 'items-start'}`}
                   >
                     <div className="flex items-center space-x-1.5 text-[10px] text-slate-500 mb-1 px-1">
-                      <span>{msg.sender === 'agent' ? '🤖 Agente (Gemini)' : msg.sender === 'operator' ? '👤 Operador Manual' : '👤 Lead'}</span>
+                      <span>{msg.sender === 'agent' ? '🤖 Agente (OpenAI)' : msg.sender === 'operator' ? '👤 Operador Manual' : '👤 Lead'}</span>
                       <span>•</span>
                       <span>{msg.channel === 'browser' ? 'Chrome Real (1ª DM)' : 'API Meta'}</span>
                       <span>•</span>
-                      <span>{formatDateBR(msg.sentAt)}</span>
+                      <span>{formatDateBR(msg.createdAt || msg.sentAt)}</span>
                     </div>
 
                     <div

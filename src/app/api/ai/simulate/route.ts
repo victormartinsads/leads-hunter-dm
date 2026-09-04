@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateIcebreaker, interpretResponseAndDecideNextAction } from '@/integrations/gemini/classifier';
+import { generateIcebreaker, interpretResponseAndDecideNextAction } from '@/integrations/openai/classifier';
 import { getBusinessConfig } from '@/lib/business-config';
 
 export async function POST(req: NextRequest) {

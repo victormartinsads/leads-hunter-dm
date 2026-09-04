@@ -13,13 +13,12 @@ import {
   Play, 
   MessageSquare, 
   CheckCircle2, 
-  Clock, 
+  PauseCircle,
   Cpu, 
-  ExternalLink,
-  Flame,
+  DollarSign,
   AlertCircle
 } from 'lucide-react';
-import { formatDateBR, getPipelineStatusLabel } from '@/lib/utils';
+import { formatDateBR } from '@/lib/utils';
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -68,6 +67,22 @@ export default function DashboardPage() {
     }
   };
 
+  const handleTogglePause = async () => {
+    try {
+      const isPaused = data?.system?.paused;
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ SYSTEM_PAUSED: !isPaused })
+      });
+      if (res.ok) {
+        fetchDashboard();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center py-32 space-x-3 text-zinc-400">
@@ -76,6 +91,14 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const costPerLead = data.metrics.totalLeads > 0 
+    ? (data.aiStats.totalCostUsd / data.metrics.totalLeads).toFixed(4)
+    : '0.0000';
+
+  const costPerCustomer = data.metrics.activeCustomerCount > 0
+    ? (data.aiStats.totalCostUsd / data.metrics.activeCustomerCount).toFixed(3)
+    : '0.000';
 
   return (
     <div className="space-y-8">
@@ -86,17 +109,29 @@ export default function DashboardPage() {
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-lg bg-amber-400/10 border border-amber-500/30 text-amber-300 text-xs font-bold mb-3">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Motor Google Gemini Ativo</span>
+              <span>Motor OpenAI Ativo ({data.system?.modelName || 'gpt-4o-mini'})</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Painel de Operações Comerciais
+              Mart Digital — Prospecção Autônoma
             </h1>
             <p className="text-xs text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-              Sistema autônomo em execução local. Prospecção pelo Chrome real, respostas pela API Oficial e IA restrita a afirmações verificadas.
+              Prospecção no Instagram para Clínicas Odontológicas, Médicas e de Estética (Funil A) e Criadores (Funil B). Etapa 1 pelo Chrome CDP + Etapa 2 pela API Oficial Meta.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleTogglePause}
+              className={`px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center space-x-2 transition-all cursor-pointer border ${
+                data.system?.paused
+                  ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 hover:bg-rose-500/30'
+                  : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:bg-zinc-800'
+              }`}
+            >
+              <PauseCircle className="w-4 h-4" />
+              <span>{data.system?.paused ? 'SISTEMA PAUSADO (Clique para Retomar)' : 'Pausar Sistema de Emergência'}</span>
+            </button>
+
             <button
               onClick={handleRunWorkerCycle}
               disabled={runningWorker || data.system?.paused}
@@ -109,7 +144,7 @@ export default function DashboardPage() {
               {runningWorker ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-zinc-950" />
-                  <span>Gerando abordagem via Gemini...</span>
+                  <span>Processando Jobs...</span>
                 </>
               ) : (
                 <>
@@ -118,14 +153,6 @@ export default function DashboardPage() {
                 </>
               )}
             </button>
-
-            <Link
-              href="/simulator"
-              className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 rounded-xl font-semibold text-xs transition-colors border border-zinc-800 flex items-center space-x-1.5"
-            >
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Simulador</span>
-            </Link>
           </div>
         </div>
 
@@ -135,6 +162,36 @@ export default function DashboardPage() {
             <span>{workerResult}</span>
           </div>
         )}
+      </div>
+
+      {/* AI Cost Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[#121215] border border-zinc-800 p-4 rounded-xl space-y-1">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span>Custo Total de IA (OpenAI)</span>
+            <DollarSign className="w-4 h-4 text-emerald-400" />
+          </div>
+          <p className="text-xl font-black text-white">${data.aiStats.totalCostUsd.toFixed(4)} USD</p>
+          <p className="text-[10px] text-zinc-500 font-mono">Teto mensal: ${data.system?.budgetLimitUsd || 50.00} USD</p>
+        </div>
+
+        <div className="bg-[#121215] border border-zinc-800 p-4 rounded-xl space-y-1">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span>Custo de IA por Lead</span>
+            <Cpu className="w-4 h-4 text-amber-400" />
+          </div>
+          <p className="text-xl font-black text-amber-400">${costPerLead} USD</p>
+          <p className="text-[10px] text-zinc-500 font-mono">Total Leads: {data.metrics.totalLeads}</p>
+        </div>
+
+        <div className="bg-[#121215] border border-zinc-800 p-4 rounded-xl space-y-1">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span>Custo por Cliente Ativo</span>
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+          </div>
+          <p className="text-xl font-black text-emerald-400">${costPerCustomer} USD</p>
+          <p className="text-[10px] text-zinc-500 font-mono">Clientes Ativos: {data.metrics.activeCustomerCount}</p>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -187,18 +244,13 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center justify-between mb-1.5 font-semibold">
                       <span className={isAgent ? 'text-amber-400' : 'text-blue-400'}>
-                        {isAgent ? '🤖 Agente IA (Gemini)' : '👤 Lead'} • Canal: {msg.channel}
+                        {isAgent ? '🤖 IA Mart Digital (OpenAI)' : '👤 Lead'} • Canal: {msg.channel}
                       </span>
                       <span className="text-[10px] text-zinc-500 font-mono">
-                        {formatDateBR(msg.sentAt)}
+                        {formatDateBR(msg.createdAt)}
                       </span>
                     </div>
                     <p className="text-zinc-300">{msg.content}</p>
-                    {msg.variant && (
-                      <span className="inline-block mt-2 text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">
-                        Variante: {msg.variant}
-                      </span>
-                    )}
                   </div>
                 );
               })

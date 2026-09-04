@@ -37,7 +37,8 @@ export function formatDateBR(dateString?: string | null): string {
   }
 }
 
-export function getPipelineStatusLabel(status: string): { label: string; color: string } {
+export function getPipelineStatusLabel(status?: string | null): { label: string; color: string } {
+  if (!status) return { label: 'Descoberto', color: 'bg-slate-100 text-slate-700 border-slate-300' };
   switch (status) {
     case 'discovered':
       return { label: 'Descoberto', color: 'bg-slate-100 text-slate-700 border-slate-300' };
@@ -66,7 +67,8 @@ export function getPipelineStatusLabel(status: string): { label: string; color: 
   }
 }
 
-export function getChannelStateLabel(state: string): { label: string; color: string } {
+export function getChannelStateLabel(state?: string | null): { label: string; color: string } {
+  if (!state) return { label: 'Pendente Navegador', color: 'text-amber-600 bg-amber-50' };
   switch (state) {
     case 'browser_contact_pending':
       return { label: 'Pendente Navegador', color: 'text-amber-600 bg-amber-50' };

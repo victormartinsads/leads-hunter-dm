@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { Lead, Message, AiCall, Job, AuditLog } from './schema';
+import { Lead, Message, AiCall, Job } from './schema';
 
 // Ensure data directory exists
 const dbDir = path.join(process.cwd(), 'data');
@@ -11,7 +11,6 @@ if (!fs.existsSync(dbDir)) {
 
 const dbPath = path.join(dbDir, 'buscandomilhao.sqlite');
 
-// Global singleton to prevent multiple instances in Next.js hot reloading
 declare global {
   var __dbInstance: DatabaseSync | undefined;
 }
@@ -31,19 +30,21 @@ function initTables(sqlite: DatabaseSync) {
       instagramHandle TEXT NOT NULL UNIQUE,
       fullName TEXT,
       bio TEXT,
+      category TEXT,
       followerCount INTEGER DEFAULT 0,
       isBusiness INTEGER DEFAULT 1,
-      icpScore INTEGER DEFAULT 0,
-      priority TEXT DEFAULT 'medium',
-      funnelType TEXT DEFAULT 'customer',
+      funnelType TEXT NOT NULL DEFAULT 'customer',
       pipelineStatus TEXT NOT NULL DEFAULT 'discovered',
       channelState TEXT NOT NULL DEFAULT 'browser_contact_pending',
-      metaLeadId TEXT,
-      whatsappPhone TEXT,
+      icpSegment TEXT,
+      icpScore INTEGER DEFAULT 50,
+      targetService TEXT,
+      location TEXT,
+      externalUrl TEXT,
+      whatsappNumber TEXT,
       notes TEXT,
-      tags TEXT DEFAULT '[]',
+      metaMessageId TEXT,
       lastContactAt TEXT,
-      nextActionAt TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
@@ -54,10 +55,8 @@ function initTables(sqlite: DatabaseSync) {
       sender TEXT NOT NULL,
       channel TEXT NOT NULL,
       content TEXT NOT NULL,
-      variant TEXT,
-      claimsUsed TEXT DEFAULT '[]',
-      intentDetected TEXT,
-      sentAt TEXT NOT NULL,
+      metaMessageId TEXT,
+      variantId TEXT,
       createdAt TEXT NOT NULL,
       FOREIGN KEY(leadId) REFERENCES leads(id)
     );
@@ -77,21 +76,38 @@ function initTables(sqlite: DatabaseSync) {
     CREATE TABLE IF NOT EXISTS jobs (
       id TEXT PRIMARY KEY,
       type TEXT NOT NULL,
-      payload TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
-      runAt TEXT NOT NULL,
-      attempts INTEGER DEFAULT 0,
-      maxAttempts INTEGER DEFAULT 3,
-      lastError TEXT,
+      payload TEXT NOT NULL,
+      retries INTEGER DEFAULT 0,
+      lockedAt TEXT,
+      errorDetails TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS experiments (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      hypothesis TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      createdAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS experiment_variants (
+      id TEXT PRIMARY KEY,
+      experimentId TEXT NOT NULL,
+      name TEXT NOT NULL,
+      promptTemplate TEXT NOT NULL,
+      impressionsCount INTEGER DEFAULT 0,
+      conversionsCount INTEGER DEFAULT 0,
+      createdAt TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS audit_logs (
       id TEXT PRIMARY KEY,
-      action TEXT NOT NULL,
-      leadId TEXT,
-      details TEXT,
+      event TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'info',
+      details TEXT NOT NULL,
       createdAt TEXT NOT NULL
     );
   `);
@@ -107,58 +123,58 @@ function seedInitialData(sqlite: DatabaseSync) {
   const sampleLeads = [
     {
       id: 'lead_1',
-      instagramHandle: '@loja.bellamoda',
-      fullName: 'Bella Moda Feminina',
-      bio: 'Moda feminina e tendências | Enviamos para todo Brasil | WhatsApp no link',
-      followerCount: 14200,
+      instagramHandle: '@dra.ericaodontologia',
+      fullName: 'Dra. Erica Oliveira | Odontologia Estética',
+      bio: 'Lentes de contato dental e Harmonização Facial | Agendamentos via Direct & WhatsApp',
+      category: 'Clínica Odontológica',
+      followerCount: 15400,
       isBusiness: 1,
-      icpScore: 92,
-      priority: 'high',
       funnelType: 'customer',
       pipelineStatus: 'contacted',
       channelState: 'waiting_inbound_reply',
-      notes: 'Loja com alto engajamento em reels de provador. ICP perfeito.',
-      tags: JSON.stringify(['Moda', 'E-commerce', 'Decisor: Loja']),
-      lastContactAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-      nextActionAt: new Date(Date.now() + 3600000 * 20).toISOString(),
+      icpSegment: 'Clinica odontologica',
+      icpScore: 95,
+      targetService: 'Chatbot de Atendimento Comercial 24/7',
+      location: 'São Paulo - SP',
+      notes: 'Clínica de odontologia estética com alto volume de interessados em lentes no Instagram.',
       createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
       updatedAt: now,
     },
     {
       id: 'lead_2',
-      instagramHandle: '@dr.carloseduardo',
-      fullName: 'Dr. Carlos Eduardo | Harmonização',
-      bio: 'Cirurgião Dentista | Especialista em Harmonização Facial | São Paulo - SP',
-      followerCount: 8900,
+      instagramHandle: '@clinicamedica.orizon',
+      fullName: 'Clínica Médica Orizon | Consultórios Integrados',
+      bio: 'Centro médico de especialidades | Cardiologia, Dermatologia e Pediatria | Agende sua consulta',
+      category: 'Clínica Médica',
+      followerCount: 28900,
       isBusiness: 1,
-      icpScore: 88,
-      priority: 'high',
       funnelType: 'customer',
       pipelineStatus: 'replied',
       channelState: 'api_eligible',
-      notes: 'Respondeu perguntando como funciona a automação para clínicas.',
-      tags: JSON.stringify(['Saúde', 'Estética', 'Decisor: Dono']),
-      lastContactAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-      nextActionAt: new Date(Date.now() + 3600000 * 2).toISOString(),
+      icpSegment: 'Clinica Médica',
+      icpScore: 92,
+      targetService: 'Chatbot de Atendimento Comercial 24/7',
+      location: 'Rio de Janeiro - RJ',
+      notes: 'Respondeu à 1ª DM perguntando como funciona a automação do WhatsApp.',
       createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
       updatedAt: now,
     },
     {
       id: 'lead_3',
-      instagramHandle: '@agencia_vortice',
-      fullName: 'Agência Vórtice Digital',
-      bio: 'Estratégia de tráfego pago e escala de faturamento para e-commerce',
-      followerCount: 22500,
+      instagramHandle: '@studio.estetica.vittae',
+      fullName: 'Vittae Estética Avançada',
+      bio: 'Procedimentos estéticos faciais e corporais | Botox, preenchimento e depilação a laser',
+      category: 'Clínica de Estética',
+      followerCount: 9400,
       isBusiness: 1,
-      icpScore: 95,
-      priority: 'urgent',
       funnelType: 'customer',
       pipelineStatus: 'whatsapp_handoff',
       channelState: 'completed',
-      notes: 'Demonstrou forte interesse, pediu link do WhatsApp e já iniciou conversa.',
-      tags: JSON.stringify(['Agência', 'Tráfego', 'WhatsApp Enviado']),
-      lastContactAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-      nextActionAt: null,
+      icpSegment: 'Clinica de estética',
+      icpScore: 88,
+      targetService: 'Gestão de Tráfego Pago (Meta & Google Ads)',
+      location: 'Curitiba - PR',
+      notes: 'Encaminhada com sucesso para o WhatsApp oficial da Mart Digital.',
       createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
       updatedAt: now,
     },
@@ -166,78 +182,55 @@ function seedInitialData(sqlite: DatabaseSync) {
       id: 'lead_4',
       instagramHandle: '@carol.vendasdigitais',
       fullName: 'Carol Silveira',
-      bio: 'Criadora de conteúdo | Dicas diárias de prospecção e vendas online 🚀',
+      bio: 'Criadora de conteúdo | Dicas diárias de prospecção e vendas online para saúde e beleza 🚀',
+      category: 'Criador de Conteúdo',
       followerCount: 45000,
       isBusiness: 0,
-      icpScore: 85,
-      priority: 'medium',
       funnelType: 'affiliate',
       pipelineStatus: 'interested',
       channelState: 'api_active',
-      notes: 'Influenciadora com público de pequenos lojistas. Excelente fit para afiliados.',
-      tags: JSON.stringify(['Criador', 'Afiliado', 'Audiência Qualificada']),
-      lastContactAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-      nextActionAt: new Date(Date.now() + 3600000 * 12).toISOString(),
+      icpSegment: null,
+      icpScore: 85,
+      targetService: 'Programa de Afiliados Mart Digital',
+      location: 'Belo Horizonte - MG',
+      notes: 'Influenciadora com público de médicos e dentistas. Excelente fit para afiliados.',
       createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-      updatedAt: now,
-    },
-    {
-      id: 'lead_5',
-      instagramHandle: '@studio.glowestetica',
-      fullName: 'Studio Glow Estética | Jardim Ângela SP',
-      bio: 'GLOW ESTÉTICA | Jardim Ângela SP | Limpeza de pele, depilação e estética corporal',
-      followerCount: 37,
-      isBusiness: 1,
-      icpScore: 78,
-      priority: 'low',
-      funnelType: 'customer',
-      pipelineStatus: 'discovered',
-      channelState: 'browser_contact_pending',
-      notes: 'Encontrado pela hashtag #esteticacuritiba. Aguardando qualificação para envio de 1ª DM.',
-      tags: JSON.stringify(['Estética', 'Local']),
-      lastContactAt: null,
-      nextActionAt: new Date(Date.now() + 3600000 * 5).toISOString(),
-      createdAt: now,
       updatedAt: now,
     }
   ];
 
   const insertLeadStmt = sqlite.prepare(`
-    INSERT INTO leads (id, instagramHandle, fullName, bio, followerCount, isBusiness, icpScore, priority, funnelType, pipelineStatus, channelState, notes, tags, lastContactAt, nextActionAt, createdAt, updatedAt)
+    INSERT INTO leads (id, instagramHandle, fullName, bio, category, followerCount, isBusiness, funnelType, pipelineStatus, channelState, icpSegment, icpScore, targetService, location, notes, createdAt, updatedAt)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   for (const l of sampleLeads) {
     insertLeadStmt.run(
-      l.id, l.instagramHandle, l.fullName, l.bio, l.followerCount, l.isBusiness,
-      l.icpScore, l.priority, l.funnelType, l.pipelineStatus, l.channelState,
-      l.notes, l.tags, l.lastContactAt, l.nextActionAt, l.createdAt, l.updatedAt
+      l.id, l.instagramHandle, l.fullName, l.bio, l.category, l.followerCount, l.isBusiness,
+      l.funnelType, l.pipelineStatus, l.channelState, l.icpSegment, l.icpScore,
+      l.targetService, l.location, l.notes, l.createdAt, l.updatedAt
     );
   }
 
   const insertMsgStmt = sqlite.prepare(`
-    INSERT INTO messages (id, leadId, sender, channel, content, variant, claimsUsed, intentDetected, sentAt, createdAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO messages (id, leadId, sender, channel, content, createdAt)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  insertMsgStmt.run('msg_1', 'lead_1', 'agent', 'browser', 'Oi Bella! Vi o provador da nova coleção que você postou ontem no reels, ficou muito profissional. Vocês tão conseguindo dar conta dos pedidos que chegam pelo direct?', 'A_casual_compliment', JSON.stringify(['Sistema opera 100% local']), null, new Date(Date.now() - 3600000 * 4).toISOString(), new Date(Date.now() - 3600000 * 4).toISOString());
-  insertMsgStmt.run('msg_2', 'lead_2', 'agent', 'browser', 'Olá Dr. Carlos, tudo bem? Vi seu conteúdo sobre planejamento facial digital. A sua clínica hoje perde muito tempo fazendo triagem de pacientes curiosos no Instagram?', 'B_problem_aware', JSON.stringify(['A primeira mensagem sai pelo navegador real']), null, new Date(Date.now() - 3600000 * 5).toISOString(), new Date(Date.now() - 3600000 * 5).toISOString());
-  insertMsgStmt.run('msg_3', 'lead_2', 'lead', 'meta_api', 'Olá! Sim, perdemos bastante tempo com isso aqui na clínica. Como funciona a solução de vocês?', null, '[]', 'asked_info', new Date(Date.now() - 3600000 * 2).toISOString(), new Date(Date.now() - 3600000 * 2).toISOString());
-  insertMsgStmt.run('msg_4', 'lead_3', 'agent', 'browser', 'Fala pessoal da Vórtice! Acompanho o trabalho de vocês na escala de e-commerce. Parabéns pelos cases postados!', 'A_casual_compliment', '[]', null, new Date(Date.now() - 3600000 * 10).toISOString(), new Date(Date.now() - 3600000 * 10).toISOString());
-  insertMsgStmt.run('msg_5', 'lead_3', 'lead', 'meta_api', 'Show de bola! Valeu demais. Vocês têm alguma ferramenta pra ajudar nosso time de prospecção?', null, '[]', 'interested', new Date(Date.now() - 3600000 * 3).toISOString(), new Date(Date.now() - 3600000 * 3).toISOString());
-  insertMsgStmt.run('msg_6', 'lead_3', 'agent', 'meta_api', 'Temos sim! Desenvolvemos um agente autônomo com IA Gemini que prospecta pelo direct e transfere os qualificados direto pro WhatsApp. Me chama no Whats que te mostro como funciona: https://wa.me/5511999999999', 'C_whatsapp_cta', JSON.stringify(['Utiliza inteligência artificial Google Gemini para geração de mensagens personalizadas.']), 'wants_whatsapp', new Date(Date.now() - 3600000 * 1).toISOString(), new Date(Date.now() - 3600000 * 1).toISOString());
+  insertMsgStmt.run('msg_1', 'lead_1', 'agent', 'browser', 'Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?', new Date(Date.now() - 3600000 * 4).toISOString());
+  insertMsgStmt.run('msg_2', 'lead_2', 'agent', 'browser', 'Opa, tudo bom? Posso tirar uma dúvida rápida com vocês?', new Date(Date.now() - 3600000 * 5).toISOString());
+  insertMsgStmt.run('msg_3', 'lead_2', 'lead', 'api', 'Olá! Pode sim, em que posso ajudar?', new Date(Date.now() - 3600000 * 2).toISOString());
 
   const insertAiStmt = sqlite.prepare(`
     INSERT INTO ai_calls (id, leadId, model, promptTokens, candidateTokens, totalTokens, estimatedCostUsd, purpose, createdAt)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  insertAiStmt.run('call_1', 'lead_1', 'gemini-2.5-flash', 420, 65, 485, 0.000068, 'icebreaker', new Date(Date.now() - 3600000 * 4).toISOString());
-  insertAiStmt.run('call_2', 'lead_2', 'gemini-2.5-flash', 380, 52, 432, 0.000060, 'icebreaker', new Date(Date.now() - 3600000 * 5).toISOString());
-  insertAiStmt.run('call_3', 'lead_2', 'gemini-2.5-flash', 510, 84, 594, 0.000085, 'classification', new Date(Date.now() - 3600000 * 2).toISOString());
+  insertAiStmt.run('call_1', 'lead_1', 'gpt-4o-mini', 420, 65, 485, 0.000068, 'icebreaker', new Date(Date.now() - 3600000 * 4).toISOString());
+  insertAiStmt.run('call_2', 'lead_2', 'gpt-4o-mini', 380, 52, 432, 0.000060, 'icebreaker', new Date(Date.now() - 3600000 * 5).toISOString());
+  insertAiStmt.run('call_3', 'lead_2', 'gpt-4o-mini', 510, 84, 594, 0.000085, 'classification', new Date(Date.now() - 3600000 * 2).toISOString());
 }
 
-// Database helper functions
 export const db = {
   getSqlite: () => getDatabase(),
 
@@ -247,17 +240,17 @@ export const db = {
     getByHandle: (handle: string) => getDatabase().prepare('SELECT * FROM leads WHERE instagramHandle = ?').get(handle) as unknown as Lead | undefined,
     insert: (lead: Partial<Lead> & { id: string; instagramHandle: string; createdAt: string; updatedAt: string }) => {
       const stmt = getDatabase().prepare(`
-        INSERT INTO leads (id, instagramHandle, fullName, bio, followerCount, isBusiness, icpScore, priority, funnelType, pipelineStatus, channelState, metaLeadId, whatsappPhone, notes, tags, lastContactAt, nextActionAt, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO leads (id, instagramHandle, fullName, bio, category, followerCount, isBusiness, funnelType, pipelineStatus, channelState, icpSegment, icpScore, targetService, location, externalUrl, whatsappNumber, notes, metaMessageId, lastContactAt, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       return stmt.run(
         lead.id, lead.instagramHandle, lead.fullName || null, lead.bio || null,
-        lead.followerCount || 0, lead.isBusiness ? 1 : 0, lead.icpScore || 0,
-        lead.priority || 'medium', lead.funnelType || 'customer',
-        lead.pipelineStatus || 'discovered', lead.channelState || 'browser_contact_pending',
-        lead.metaLeadId || null, lead.whatsappPhone || null, lead.notes || null,
-        lead.tags || '[]', lead.lastContactAt || null, lead.nextActionAt || null,
-        lead.createdAt, lead.updatedAt
+        lead.category || null, lead.followerCount || 0, lead.isBusiness ? 1 : 0,
+        lead.funnelType || 'customer', lead.pipelineStatus || 'discovered',
+        lead.channelState || 'browser_contact_pending', lead.icpSegment || null,
+        lead.icpScore || 50, lead.targetService || null, lead.location || null,
+        lead.externalUrl || null, lead.whatsappNumber || null, lead.notes || null,
+        lead.metaMessageId || null, lead.lastContactAt || null, lead.createdAt, lead.updatedAt
       );
     },
     update: (id: string, data: Partial<Lead>) => {
@@ -266,17 +259,31 @@ export const db = {
       const updated = { ...current, ...data, updatedAt: new Date().toISOString() };
       const stmt = getDatabase().prepare(`
         UPDATE leads SET
-          fullName = ?, bio = ?, followerCount = ?, isBusiness = ?, icpScore = ?,
-          priority = ?, funnelType = ?, pipelineStatus = ?, channelState = ?,
-          metaLeadId = ?, whatsappPhone = ?, notes = ?, tags = ?,
-          lastContactAt = ?, nextActionAt = ?, updatedAt = ?
+          fullName = ?, bio = ?, category = ?, followerCount = ?, isBusiness = ?,
+          funnelType = ?, pipelineStatus = ?, channelState = ?, icpSegment = ?,
+          icpScore = ?, targetService = ?, location = ?, externalUrl = ?,
+          whatsappNumber = ?, notes = ?, metaMessageId = ?, lastContactAt = ?, updatedAt = ?
         WHERE id = ?
       `);
       stmt.run(
-        updated.fullName, updated.bio, updated.followerCount, updated.isBusiness ? 1 : 0,
-        updated.icpScore, updated.priority, updated.funnelType, updated.pipelineStatus,
-        updated.channelState, updated.metaLeadId, updated.whatsappPhone, updated.notes,
-        updated.tags, updated.lastContactAt, updated.nextActionAt, updated.updatedAt,
+        updated.fullName ?? null,
+        updated.bio ?? null,
+        updated.category ?? null,
+        updated.followerCount ?? 0,
+        updated.isBusiness ? 1 : 0,
+        updated.funnelType ?? 'customer',
+        updated.pipelineStatus ?? 'discovered',
+        updated.channelState ?? 'browser_contact_pending',
+        updated.icpSegment ?? null,
+        updated.icpScore ?? 50,
+        updated.targetService ?? null,
+        updated.location ?? null,
+        updated.externalUrl ?? null,
+        updated.whatsappNumber ?? null,
+        updated.notes ?? null,
+        updated.metaMessageId ?? null,
+        updated.lastContactAt ?? null,
+        updated.updatedAt,
         id
       );
       return updated;
@@ -292,17 +299,16 @@ export const db = {
   },
 
   messages: {
-    getByLeadId: (leadId: string) => getDatabase().prepare('SELECT * FROM messages WHERE leadId = ? ORDER BY sentAt ASC').all(leadId) as unknown as Message[],
-    getAll: () => getDatabase().prepare('SELECT * FROM messages ORDER BY sentAt DESC').all() as unknown as Message[],
-    insert: (msg: Partial<Message> & { id: string; leadId: string; sender: string; channel: string; content: string; sentAt: string; createdAt: string }) => {
+    getByLeadId: (leadId: string) => getDatabase().prepare('SELECT * FROM messages WHERE leadId = ? ORDER BY createdAt ASC').all(leadId) as unknown as Message[],
+    getAll: () => getDatabase().prepare('SELECT * FROM messages ORDER BY createdAt DESC').all() as unknown as Message[],
+    insert: (msg: Partial<Message> & { id: string; leadId: string; sender: string; channel: string; content: string; createdAt: string }) => {
       const stmt = getDatabase().prepare(`
-        INSERT INTO messages (id, leadId, sender, channel, content, variant, claimsUsed, intentDetected, sentAt, createdAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO messages (id, leadId, sender, channel, content, metaMessageId, variantId, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
       return stmt.run(
         msg.id, msg.leadId, msg.sender, msg.channel, msg.content,
-        msg.variant || null, msg.claimsUsed || '[]', msg.intentDetected || null,
-        msg.sentAt, msg.createdAt
+        msg.metaMessageId || null, msg.variantId || null, msg.createdAt
       );
     }
   },
@@ -312,7 +318,7 @@ export const db = {
     getStats: () => {
       const row = getDatabase().prepare(`
         SELECT COUNT(*) as totalCalls,
-               COALESCE(SUM(totalTokens), 0) as totalTokens,
+               COALESCE(SUM(promptTokens + candidateTokens), 0) as totalTokens,
                COALESCE(SUM(estimatedCostUsd), 0.0) as totalCostUsd
         FROM ai_calls
       `).get() as { totalCalls: number; totalTokens: number; totalCostUsd: number };
@@ -324,9 +330,15 @@ export const db = {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       return stmt.run(
-        call.id, call.leadId, call.model, call.promptTokens,
-        call.candidateTokens, call.totalTokens, call.estimatedCostUsd,
-        call.purpose, call.createdAt
+        call.id,
+        call.leadId ?? null,
+        call.model,
+        call.promptTokens ?? 0,
+        call.candidateTokens ?? 0,
+        (call.promptTokens ?? 0) + (call.candidateTokens ?? 0),
+        call.estimatedCostUsd ?? 0,
+        call.purpose,
+        call.createdAt
       );
     }
   }

@@ -1,64 +1,41 @@
 {
-  "OWNER_NAME": "Amanda",
-  "OWNER_ROLE": "Fundadora & Tech Lead",
-  "COMPANY_NAME": "Agência de IA & Automação Tech",
-  "COMPANY_WEBSITE": "https://suaempresa.com.br",
-  "INSTAGRAM_HANDLE": "@amanda.tech",
-  "WHATSAPP_LINK": "https://wa.me/5511999999999",
-  "AFFILIATE_GROUP_LINK": "https://chat.whatsapp.com/ParceirosTech",
-  "ONE_LINE_PITCH": "Desenvolvemos agentes de IA e automações inteligentes sob medida que reduzem custos operacionais e aceleram o atendimento comercial de empresas.",
-  "HOW_IT_WORKS": "1. Mapeamos os gargalos operacionais da sua empresa | 2. Desenvolvemos e integramos o agente de IA com seus sistemas (WhatsApp, CRM, ERP) | 3. Demonstração prática e ativação em produção",
-  "REVENUE_MODEL": "Projeto de implementação sob medida + mensalidade de sustentação e evolução de IA",
-  "MARKET_JARGON": "SDR = Qualificação Comercial | Handoff = Transferência de IA para Humano | LLM = Modelo de Linguagem de IA",
+  "OWNER_NAME": "{{OWNER_NAME}}",
+  "OWNER_ROLE": "{{OWNER_ROLE}}",
+  "COMPANY_NAME": "{{COMPANY_NAME}}",
+  "COMPANY_WEBSITE": "{{COMPANY_WEBSITE}}",
+  "INSTAGRAM_HANDLE": "{{INSTAGRAM_HANDLE}}",
+  "WHATSAPP_LINK": "{{WHATSAPP_LINK}}",
+  "AFFILIATE_GROUP_LINK": "{{AFFILIATE_GROUP_LINK}}",
+  "ONE_LINE_PITCH": "{{ONE_LINE_PITCH}}",
+  "HOW_IT_WORKS": "{{HOW_IT_WORKS}}",
+  "REVENUE_MODEL": "{{REVENUE_MODEL}}",
+  "MARKET_JARGON": "{{MARKET_JARGON}}",
   "VERIFIED_CLAIMS": [
-    "Desenvolvemos agentes autônomos de IA e automações sob medida integradas com WhatsApp, CRM, ERPs e bancos de dados da sua empresa.",
-    "A IA atende e qualifica clientes no WhatsApp ou Direct em menos de 1 minuto, 24 horas por dia, 7 dias por semana.",
-    "O agente faz a triagem do lead, entende o orçamento/necessidade e só transfere para o vendedor humano quando o cliente está qualificado.",
-    "Utilizamos os modelos mais avançados do mercado (Google Gemini, OpenAI, Claude) treinados com a base de conhecimento específica da sua empresa.",
-    "Toda a infraestrutura opera com regras estritas de privacidade e segurança, sem expor dados confidenciais a terceiros.",
-    "A IA identifica momentos de dúvida complexa ou insatisfação e aciona imediatamente um atendente humano com o histórico resumido.",
-    "Conseguimos apresentar uma demonstração funcional com simulação ao vivo do fluxo desenhado para o modelo de negócio da sua empresa.",
-    "Integramos com os principais CRMs e plataformas do mercado (RD Station, HubSpot, Kiwify, Hotmart, Bling, Tiny, Typeform, Webhooks e bancos de dados SQL/NoSQL).",
-    "A estrutura da automação e os fluxos desenvolvidos pertencem à sua empresa, sem depender de plataformas fechadas que prendem seus dados.",
-    "O tempo médio de desenvolvimento e homologação de um agente ou automação sob medida varia entre 7 a 20 dias úteis, dependendo da complexidade das integrações.",
-    "Acompanhamos a entrada em produção com treinamento guiado para a sua equipe e documentação clara dos fluxos implementados.",
-    "Oferecemos acompanhamento técnico e manutenção para garantir que as integrações acompanhem atualizações de APIs oficiais e novos requisitos do seu negócio."
+    "{{VERIFIED_CLAIM_1}}",
+    "{{VERIFIED_CLAIM_2}}"
   ],
   "UNVERIFIED_CLAIMS": [
-    "Garantia de dobrar o faturamento ou as vendas da sua empresa em 30 dias.",
-    "Você poderá demitir 100% dos seus funcionários de atendimento.",
-    "A IA nunca cometerá nenhum erro e possui 100% de precisão em qualquer pergunta do mundo.",
-    "Implementamos qualquer sistema complexo de IA em menos de 24 horas.",
-    "Garantimos que a Meta nunca bloqueará nenhum número ou conta de WhatsApp.",
-    "Integração instantânea com qualquer software antigo/legado que não tenha API ou banco acessível.",
-    "Suporte presencial ou plantão ininterrupto na sede do cliente.",
-    "Custo zero garantido de infraestrutura de nuvem e consumo de IA para sempre."
+    "{{UNVERIFIED_CLAIM_1}}",
+    "{{UNVERIFIED_CLAIM_2}}"
   ],
   "ICP_SEGMENTS": [
-    "Empresas de serviços com alto volume de leads no WhatsApp",
-    "E-commerces e distribuidoras que precisam de automação de pedidos",
-    "Clínicas médicas, odontológicas e estéticas",
-    "Escritórios de advocacia e contabilidade",
-    "Agências e consultorias B2B"
+    "{{SEGMENT_1}}",
+    "{{SEGMENT_2}}"
   ],
   "ICP_KEYWORDS": [
-    "automação",
-    "inteligência artificial",
-    "atendimento",
-    "vendas",
-    "clínica",
-    "consultoria"
+    "{{KEYWORD_1}}",
+    "{{KEYWORD_2}}"
   ],
   "AFFILIATE_TOPICS": [
-    "inteligência artificial para negócios",
-    "automação de processos",
-    "transformação digital"
+    "{{TOPIC_1}}",
+    "{{TOPIC_2}}"
   ],
-  "GEOGRAPHY": "Brasil",
+  "GEOGRAPHY": "{{GEOGRAPHY}}",
   "MAX_DMS_PER_DAY": 30,
   "MIN_SECONDS_BETWEEN_DMS": 90,
   "MAX_SECONDS_BETWEEN_DMS": 240,
   "OPERATING_HOURS": "09:00-20:00",
   "OPERATING_TIMEZONE": "America/Sao_Paulo",
-  "SYSTEM_PAUSED": false
+  "SYSTEM_PAUSED": false,
+  "REQUIRE_BUSINESS_ACCOUNT": true
 }

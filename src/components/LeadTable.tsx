@@ -48,7 +48,10 @@ export default function LeadTable({ leads, onRefresh, onDeleteLead }: LeadTableP
             {leads.map((lead) => {
               const statusInfo = getPipelineStatusLabel(lead.pipelineStatus);
               const channelInfo = getChannelStateLabel(lead.channelState);
-              const tags = lead.tags ? JSON.parse(lead.tags) : [];
+              let tags: string[] = [];
+              if (lead.tags) {
+                try { tags = JSON.parse(lead.tags); } catch { tags = []; }
+              }
 
               return (
                 <tr key={lead.id} className="hover:bg-zinc-900/60 transition-colors">

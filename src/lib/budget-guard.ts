@@ -1,15 +1,16 @@
 import { db } from '@/db';
 import { AiCall } from '@/db/schema';
 
-export function calculateGeminiCost(promptTokens: number, candidateTokens: number, model: string = 'gemini-2.5-flash'): number {
-  if (model.includes('pro')) {
-    return (promptTokens * 0.00000125) + (candidateTokens * 0.000005);
+export function calculateOpenAICost(promptTokens: number, candidateTokens: number, model: string = 'gpt-4o-mini'): number {
+  if (model.includes('gpt-4o') && !model.includes('mini')) {
+    return (promptTokens * 0.0000025) + (candidateTokens * 0.000010);
   }
-  return (promptTokens * 0.0000001) + (candidateTokens * 0.0000004);
+  // gpt-4o-mini pricing ($0.15/1M input, $0.60/1M output)
+  return (promptTokens * 0.00000015) + (candidateTokens * 0.00000060);
 }
 
 export async function checkBudgetExceeded(): Promise<{ exceeded: boolean; currentSpentUsd: number; budgetLimitUsd: number }> {
-  const budgetLimitUsd = parseFloat(process.env.GEMINI_MONTHLY_BUDGET_USD || '50.00');
+  const budgetLimitUsd = parseFloat(process.env.OPENAI_MONTHLY_BUDGET_USD || process.env.GEMINI_MONTHLY_BUDGET_USD || '50.00');
   const stats = db.aiCalls.getStats();
   const currentSpentUsd = stats.totalCostUsd || 0;
   return {
@@ -27,7 +28,7 @@ export async function recordAiCall(params: {
   purpose: string;
 }): Promise<AiCall> {
   const totalTokens = params.promptTokens + params.candidateTokens;
-  const estimatedCostUsd = calculateGeminiCost(params.promptTokens, params.candidateTokens, params.model);
+  const estimatedCostUsd = calculateOpenAICost(params.promptTokens, params.candidateTokens, params.model);
 
   const newCall: AiCall = {
     id: 'aicall_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now(),

@@ -21,7 +21,7 @@ export async function GET() {
     const costPerLeadUsd = contactedCount > 0 ? (aiStats.totalCostUsd / contactedCount) : 0;
     const costPerCustomerUsd = activeCustomerCount > 0 ? (aiStats.totalCostUsd / activeCustomerCount) : (aiStats.totalCostUsd || 0);
 
-    const budgetLimitUsd = parseFloat(process.env.GEMINI_MONTHLY_BUDGET_USD || '50.00');
+    const budgetLimitUsd = parseFloat(process.env.OPENAI_MONTHLY_BUDGET_USD || process.env.GEMINI_MONTHLY_BUDGET_USD || '50.00');
     const budgetUsedPercent = budgetLimitUsd > 0 ? Math.min(100, (aiStats.totalCostUsd / budgetLimitUsd) * 100) : 0;
 
     const recentMessages = allMessages.slice(0, 5);
@@ -57,11 +57,16 @@ export async function GET() {
           budgetUsedPercent: budgetUsedPercent.toFixed(1)
         }
       },
+      aiStats: {
+        totalCalls: aiStats.totalCalls,
+        totalTokens: aiStats.totalTokens,
+        totalCostUsd: aiStats.totalCostUsd
+      },
       system: {
         paused: config.SYSTEM_PAUSED ?? false,
         chromeStatus,
-        geminiConfigured: !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 0,
-        modelName: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+        modelName: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        budgetLimitUsd,
         maxDmsPerDay: config.MAX_DMS_PER_DAY,
         operatingHours: config.OPERATING_HOURS,
         verifiedClaimsCount: config.VERIFIED_CLAIMS?.length || 0,
