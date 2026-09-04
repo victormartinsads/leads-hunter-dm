@@ -19,7 +19,7 @@ export default async function ClaimsPage() {
           <h1 className="text-2xl font-black text-white tracking-tight">Gestão de Claims & Regras de Ouro</h1>
         </div>
         <p className="text-xs text-zinc-400 mt-1 max-w-3xl leading-relaxed">
-          Controle rigoroso sobre o que o Google Gemini tem permissão de afirmar. Elimine alucinações comerciais garantindo que a IA só fale fatos 100% comprovados.
+          Controle rigoroso sobre o que a IA (OpenAI gpt-4o-mini) tem permissão de afirmar. Elimine alucinações comerciais garantindo que a IA só fale fatos 100% comprovados.
         </p>
       </div>
 

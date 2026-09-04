@@ -91,10 +91,10 @@ export default function StatsCards({ metrics }: StatsProps) {
         </div>
       </div>
 
-      {/* Card 4: Custo Gemini AI */}
+      {/* Card 4: Custo OpenAI */}
       <div className="bg-[#121215] border border-zinc-800 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-slate-700 transition-colors">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Consumo Gemini AI</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Consumo OpenAI (gpt-4o-mini)</span>
           <div className="p-2 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
             <DollarSign className="w-4 h-4 text-amber-400" />
           </div>

@@ -3,8 +3,8 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Buscando 1 Milhão — Sistema Comercial Autônomo',
-  description: 'Prospecção comercial inteligente no Instagram com Google Gemini e Chrome Real',
+  title: 'Mart Digital — Sistema Comercial Autônomo',
+  description: 'Prospecção comercial inteligente no Instagram com OpenAI gpt-4o-mini e Chrome Real',
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
         </main>
         <footer className="border-t border-slate-850 py-6 text-center text-xs text-slate-500 bg-[#0d1322]">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>Buscando 1 Milhão • Sistema Comercial Autônomo com Google Gemini</span>
+            <span>Mart Digital • Sistema Comercial Autônomo com OpenAI (gpt-4o-mini)</span>
             <span>Roda 100% Local • Regras Estritas de Claims Ativas</span>
           </div>
         </footer>

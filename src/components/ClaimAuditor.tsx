@@ -30,7 +30,7 @@ export default function ClaimAuditor() {
     }
   };
 
-  const sampleCompliant = "Oi! Vi seu trabalho excelente no perfil. Nosso sistema opera 100% local no seu computador com IA Gemini para qualificar leads no direct. Me chama no Whats para eu te mandar uma demonstração!";
+  const sampleCompliant = "Oi! Vi seu trabalho excelente no perfil. Nosso sistema opera com agente de IA da Mart Digital para qualificar leads no direct e agendar no WhatsApp. Me chama no Whats para eu te mandar uma demonstração!";
   const sampleNonCompliant = "Temos uma taxa de resposta de 95% e garantia de 100 clientes novos no primeiro mês sem nenhum risco para você!";
 
   return (

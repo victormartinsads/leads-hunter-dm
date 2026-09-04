@@ -357,7 +357,7 @@ export default function LeadDetailPage() {
               <div className="flex items-center justify-between font-bold text-purple-300">
                 <span className="flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" />
-                  Sugestão Gerada pelo Google Gemini:
+                  Sugestão Gerada pela IA (OpenAI gpt-4o-mini):
                 </span>
                 <button
                   onClick={() => setAiSuggestion(null)}
@@ -396,7 +396,7 @@ export default function LeadDetailPage() {
                 className="text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{generatingAi ? 'Consultando Gemini...' : 'Gerar Resposta com IA (Gemini)'}</span>
+                <span>{generatingAi ? 'Consultando OpenAI...' : 'Gerar Resposta com IA (OpenAI)'}</span>
               </button>
               <span className="text-[10px] text-slate-500">Trava de Canal Ativa</span>
             </div>

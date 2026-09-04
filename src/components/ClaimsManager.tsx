@@ -124,7 +124,7 @@ export default function ClaimsManager({ initialVerified, initialUnverified }: Cl
         <div className="flex items-start space-x-3">
           <Info className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           <div className="text-xs leading-relaxed">
-            <strong className="text-white">Regra de Ouro das Duas Colunas:</strong> O agente de IA Google Gemini opera sob supervisão estrita. Ele <span className="underline font-bold text-emerald-400">só tem autorização</span> para falar aos leads o que estiver em <strong>VERIFIED_CLAIMS</strong>. Quaisquer ideias ou promessas em <strong>UNVERIFIED_CLAIMS</strong> são bloqueadas por prompt engineering e filtros de conformidade até que você anexe uma prova e as promova.
+            <strong className="text-white">Regra de Ouro das Duas Colunas:</strong> O agente de IA (OpenAI gpt-4o-mini) opera sob supervisão estrita. Ele <span className="underline font-bold text-emerald-400">só tem autorização</span> para falar aos leads o que estiver em <strong>VERIFIED_CLAIMS</strong>. Quaisquer ideias ou promessas em <strong>UNVERIFIED_CLAIMS</strong> são bloqueadas por prompt engineering e filtros de conformidade até que você anexe uma prova e as promova.
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function ClaimsManager({ initialVerified, initialUnverified }: Cl
                       Liberado p/ IA
                     </span>
                   </h3>
-                  <p className="text-[11px] text-zinc-400">Só o que você consegue provar hoje. Único conteúdo autorizado pro Gemini.</p>
+                  <p className="text-[11px] text-zinc-400">Só o que você consegue provar hoje. Único conteúdo autorizado pra IA (OpenAI).</p>
                 </div>
               </div>
               <span className="text-xs font-bold text-emerald-400 bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 font-mono">
@@ -289,7 +289,7 @@ export default function ClaimsManager({ initialVerified, initialUnverified }: Cl
             <input
               type="text"
               required
-              placeholder="Ex: Sistema opera 100% local com integração ao Gemini..."
+              placeholder="Ex: Anos de experiência com tráfego pago (Meta Ads e Google Ads)..."
               value={newClaimText}
               onChange={(e) => setNewClaimText(e.target.value)}
               className="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"

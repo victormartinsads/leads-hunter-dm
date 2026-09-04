@@ -202,7 +202,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-300 mb-1">Score Mínimo do Gemini (0-100)</label>
+            <label className="block font-semibold text-slate-300 mb-1">Score Mínimo da IA (0-100)</label>
             <input
               type="number"
               value={config.MIN_ICP_SCORE ?? 70}

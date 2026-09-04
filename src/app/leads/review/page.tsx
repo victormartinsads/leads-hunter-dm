@@ -536,7 +536,7 @@ export default function GuidedReviewPage() {
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <span className="text-xs font-bold uppercase tracking-wider text-white">
-                  Pitch Personalizado Gerado pelo Gemini (1ª DM):
+                  Pitch Personalizado Gerado pela IA (1ª DM - OpenAI gpt-4o-mini):
                 </span>
               </div>
 

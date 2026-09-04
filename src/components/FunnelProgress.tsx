@@ -40,7 +40,7 @@ export default function FunnelProgress({
       percent: contactedCount > 0 ? `${((repliedCount / contactedCount) * 100).toFixed(0)}%` : '0%',
       icon: MessageSquare,
       badgeColor: 'bg-zinc-800 text-zinc-300',
-      tag: 'Gemini 3.6 Flash'
+      tag: 'OpenAI gpt-4o-mini'
     },
     {
       label: 'WhatsApp / Grupo',
