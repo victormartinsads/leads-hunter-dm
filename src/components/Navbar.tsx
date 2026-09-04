@@ -138,6 +138,17 @@ export default function Navbar() {
             {/* Status Badges & Action Toolbar */}
             <div className="flex items-center space-x-2 shrink-0">
               
+              {/* WhatsApp & Affiliate Group Direct Shortcuts */}
+              <a
+                href="https://wa.me/55.21+971748472"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
+                title="Abrir WhatsApp da Mart Digital"
+              >
+                <span>WhatsApp Oficial</span>
+              </a>
+
               {/* OpenAI Model Badge */}
               <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
