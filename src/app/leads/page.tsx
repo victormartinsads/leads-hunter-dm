@@ -23,7 +23,7 @@ import { InstagramIcon } from '@/components/Icons';
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
   const [funnelFilter, setFunnelFilter] = useState<'all' | 'customer' | 'affiliate'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);

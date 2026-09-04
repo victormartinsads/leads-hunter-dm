@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import StatsCards from '@/components/StatsCards';
 import FunnelProgress from '@/components/FunnelProgress';
+import KanbanBoard from '@/components/KanbanBoard';
 import { 
   Users, 
   ShieldCheck, 
@@ -78,6 +79,19 @@ export default function DashboardPage() {
       if (res.ok) {
         fetchDashboard();
       }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleMoveStage = async (leadId: string, newStatus: string) => {
+    try {
+      await fetch(`/api/leads/${leadId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pipelineStatus: newStatus })
+      });
+      fetchDashboard();
     } catch (e) {
       console.error(e);
     }
@@ -205,6 +219,15 @@ export default function DashboardPage() {
         whatsappCount={data.metrics.whatsappCount}
         activeCustomerCount={data.metrics.activeCustomerCount}
       />
+
+      {/* Interactive 9-Stage Kanban Board */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white tracking-tight">Quadro Kanban do CRM</h2>
+          <span className="text-xs text-zinc-400">Clique para mudar de etapa ou alternar entre os Funis A e B</span>
+        </div>
+        <KanbanBoard leads={data.allLeads || []} onMoveStage={handleMoveStage} />
+      </div>
 
       {/* Two Column Layout: Recent Conversations & Claims Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

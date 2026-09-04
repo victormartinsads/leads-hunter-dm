@@ -73,7 +73,8 @@ export async function GET() {
         unverifiedClaimsCount: config.UNVERIFIED_CLAIMS?.length || 0
       },
       recentMessages,
-      recentLeads
+      recentLeads,
+      allLeads
     });
   } catch (error: any) {
     console.error('Error fetching dashboard data:', error);
